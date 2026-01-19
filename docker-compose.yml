@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:15
+    container_name: todo-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: todo
+      POSTGRES_USER: todo
+      POSTGRES_PASSWORD: todo
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - nesypo-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    container_name: todo-backend
+    volumes:
+      - ./backend:/var/www/html
+    environment:
+      DATABASE_URL: "postgresql://todo:todo@db:5432/todo?serverVersion=15"
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    networks:
+      - nesypo-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/Dockerfile
+    container_name: todo-frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    networks:
+      - nesypo-network
+
+volumes:
+  db_data:
+
+networks:
+  nesypo-network:
+    driver: bridge

@@ -1,0 +1,88 @@
+<?php
+
+namespace App\Entity;
+
+use ApiPlatform\Metadata\ApiResource;
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Entity\Traits\TimestampableTrait;
+
+#[ORM\Entity]
+#[ApiResource]
+#[ORM\HasLifecycleCallbacks]
+class TodoList
+{
+    use TimestampableTrait;
+
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
+    private ?int $id = null;
+
+    #[ORM\Column(type: "string", length: 255)]
+    private ?string $title = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "todoLists")]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $owner = null;
+
+    #[ORM\OneToMany(mappedBy: "todoList", targetEntity: Task::class, cascade: ["persist", "remove"], orphanRemoval: true)]
+    private Collection $tasks;
+
+    public function __construct()
+    {
+        $this->tasks = new ArrayCollection();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(string $title): self
+    {
+        $this->title = $title;
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?User $owner): self
+    {
+        $this->owner = $owner;
+        return $this;
+    }
+
+    public function getTasks(): Collection
+    {
+        return $this->tasks;
+    }
+
+    public function addTask(Task $task): self
+    {
+        if (!$this->tasks->contains($task)) {
+            $this->tasks->add($task);
+            $task->setTodoList($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTask(Task $task): self
+    {
+        if ($this->tasks->removeElement($task)) {
+            if ($task->getTodoList() === $this) {
+                $task->setTodoList(null);
+            }
+        }
+
+        return $this;
+    }
+}
