@@ -21,6 +21,7 @@ services:
     container_name: todo-backend
     volumes:
       - ./backend:/var/www/html
+      - backend_vendor:/var/www/html/vendor
     environment:
       DATABASE_URL: "postgresql://todo:todo@db:5432/todo?serverVersion=15"
     depends_on:
@@ -47,6 +48,7 @@ services:
 
 volumes:
   db_data:
+  backend_vendor:
 
 networks:
   nesypo-network:

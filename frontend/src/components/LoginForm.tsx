@@ -1,46 +1,39 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema } from "@/lib/validation/auth";
-import { login } from "@/lib/auth.api";
-import { useAuthStore } from "@/stores/auth.store";
-import { useRouter } from "next/navigation";
-import { z } from "zod";
+import {useForm, Controller} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {loginSchema} from "@/lib/validation/auth";
+import {login} from "@/lib/auth.api";
+import {useRouter} from "next/navigation";
+import {z} from "zod";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import {Label} from "@/components/ui/label";
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
     const router = useRouter();
-    const authLogin = useAuthStore((s) => s.login);
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors, isSubmitting },
-    } = useForm<LoginFormValues>({
+    const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
+        defaultValues: {
+            email: "",
+            password: "",
+        },
     });
 
     const onSubmit = async (data: LoginFormValues) => {
         try {
-            const res = await login(data.email, data.password);
-
-            // Ici on appelle ton store
-            authLogin(res.token, res.user);
-
-            router.push("/");
+            await login(data.email, data.password);
+            router.push("/dashboard");
         } catch {
             alert("Identifiants invalides");
         }
@@ -50,34 +43,55 @@ export default function LoginForm() {
         <Card className="mx-auto mt-20 max-w-md">
             <CardHeader>
                 <CardTitle>Connexion</CardTitle>
-                <CardDescription>
-                    Connecte-toi pour accéder à tes tâches
-                </CardDescription>
             </CardHeader>
 
             <CardContent>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="space-y-1">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" {...register("email")} />
-                        {errors.email && (
-                            <p className="text-sm text-red-500">{errors.email.message}</p>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    {/* EMAIL */}
+                    <Controller
+                        name="email"
+                        control={form.control}
+                        render={({field, fieldState}) => (
+                            <div className="space-y-1">
+                                <Label>Email</Label>
+                                <Input
+                                    {...field}
+                                    id="email"
+                                    type="email"
+                                    aria-invalid={fieldState.invalid}
+                                />
+                                {fieldState.error && (
+                                    <p className="text-sm text-red-500">
+                                        {fieldState.error.message}
+                                    </p>
+                                )}
+                            </div>
                         )}
-                    </div>
+                    />
 
-                    <div className="space-y-1">
-                        <Label htmlFor="password">Mot de passe</Label>
-                        <Input
-                            id="password"
-                            type="password"
-                            {...register("password")}
-                        />
-                        {errors.password && (
-                            <p className="text-sm text-red-500">{errors.password.message}</p>
+                    {/* PASSWORD */}
+                    <Controller
+                        name="password"
+                        control={form.control}
+                        render={({field, fieldState}) => (
+                            <div className="space-y-1">
+                                <Label>Mot de passe</Label>
+                                <Input
+                                    {...field}
+                                    id="password"
+                                    type="password"
+                                    aria-invalid={fieldState.invalid}
+                                />
+                                {fieldState.error && (
+                                    <p className="text-sm text-red-500">
+                                        {fieldState.error.message}
+                                    </p>
+                                )}
+                            </div>
                         )}
-                    </div>
+                    />
 
-                    <Button className="w-full" disabled={isSubmitting}>
+                    <Button className="w-full" disabled={form.formState.isSubmitting}>
                         Se connecter
                     </Button>
                 </form>

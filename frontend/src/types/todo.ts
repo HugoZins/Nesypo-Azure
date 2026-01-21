@@ -1,5 +1,4 @@
 export type TodoList = {
-    id: string;
-    name: string;
-    progress: number;
+    id: number;
+    title: string;
 };

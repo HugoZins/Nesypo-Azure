@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -10,7 +11,7 @@ use App\Entity\Traits\TimestampableTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: "users")]
 #[ApiResource]
 #[ORM\HasLifecycleCallbacks]

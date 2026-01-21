@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use App\Repository\TaskRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Enum\TaskPriority;
 use App\Entity\Traits\TimestampableTrait;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TaskRepository::class)]
 #[ApiResource]
 #[ORM\HasLifecycleCallbacks]
 class Task

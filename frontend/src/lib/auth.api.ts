@@ -1,16 +1,15 @@
-import { api } from "@/lib/api"
+import {api} from "@/lib/api";
 
-interface LoginResponse {
-    token: string
-    user: {
-        email: string
-        roles: string[]
-    }
-}
-
-export const login = (email: string, password: string) =>
-    api
-        .post("api/login", {
-            json: { email, password },
+export const register = async (email: string, password: string, passwordConfirm: string) => {
+    return await api
+        .post("api/register", {
+            json: { email, password, passwordConfirm },
         })
-        .json<LoginResponse>()
+        .json();
+};
+
+export const login = async (email: string, password: string) => {
+    return await api.post("api/login", {
+        json: {email, password},
+    }).json<any>();
+};
