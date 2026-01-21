@@ -1,12 +1,11 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Pagination } from "@/components/ui/pagination";
-import { ProgressCell } from "./ProgressCell";
-import { TodoActionsMenu } from "./TodoActionsMenu";
-import { TodoList } from "@/types/todo";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {Pagination} from "@/components/ui/pagination";
+import {ProgressCell} from "./ProgressCell";
+import {TodoActionsMenu} from "./TodoActionsMenu";
+import {Todo} from "@/types/todo";
 import {useState} from "react";
 
-
-export function TodoTable({ data }: { data: TodoList[] }) {
+export function TodoTable({data}: { data: Todo[] }) {
     const [page, setPage] = useState(1);
     const pageSize = 10;
 
@@ -27,17 +26,23 @@ export function TodoTable({ data }: { data: TodoList[] }) {
                 <TableBody>
                     {pageData.map(todo => (
                         <TableRow key={todo.id}>
-                            <TableCell>{todo.name}</TableCell>
+                            <TableCell>{todo.title}</TableCell>
                             <TableCell>
-                                <ProgressCell progress={todo.progress} />
+                                <ProgressCell progress={todo.done ? 100 : 0}/>
                             </TableCell>
                             <TableCell>
-                                <TodoActionsMenu todo={todo} />
+                                <TodoActionsMenu todo={todo}/>
                             </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
+
+            <Pagination
+                currentPage={page}
+                totalPages={Math.ceil(data.length / pageSize)}
+                onPageChange={setPage}
+            />
         </div>
     );
 }

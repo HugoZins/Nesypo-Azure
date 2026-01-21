@@ -1,4 +1,4 @@
-import { Empty } from "@/components/ui/empty";
+import {Empty} from "@/components/ui/empty";
 
 export function EmptyState() {
     return (

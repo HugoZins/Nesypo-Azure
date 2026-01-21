@@ -25,7 +25,7 @@
         "symfony/maker-bundle": "^1.65",
         "symfony/property-access": "7.4.*",
         "symfony/property-info": "7.4.*",
-        "symfony/runtime": "7.4.*",
+        "symfony/runtime": "*",
         "symfony/security-bundle": "7.4.*",
         "symfony/serializer": "7.4.*",
         "symfony/twig-bundle": "7.4.*",

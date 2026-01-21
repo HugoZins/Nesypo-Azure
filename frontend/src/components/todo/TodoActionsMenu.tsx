@@ -4,15 +4,15 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { MoreHorizontal } from "lucide-react"
+import {Button} from "@/components/ui/button"
+import {MoreHorizontal} from "lucide-react"
 
-export function TodoActionsMenu({ todo }: { todo: any }) {
+export function TodoActionsMenu({todo}: { todo: any }) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
-                    <MoreHorizontal />
+                    <MoreHorizontal/>
                 </Button>
             </DropdownMenuTrigger>
 

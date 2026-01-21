@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useForm } from "react-hook-form";
-import { api } from "@/lib/api";
+import {useState} from "react";
+import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,} from "@/components/ui/dialog";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {useForm} from "react-hook-form";
+import {useCreateTodoList} from "@/hooks/todoLists/useCreateTodoList";
 
 type FormValues = {
     name: string;
@@ -14,11 +14,13 @@ type FormValues = {
 
 export function CreateTodoListDialog() {
     const [open, setOpen] = useState(false);
+    const {register, handleSubmit, reset} = useForm<FormValues>();
 
-    const { register, handleSubmit } = useForm<FormValues>();
+    const {mutateAsync, isLoading} = useCreateTodoList();
 
     const onSubmit = async (values: FormValues) => {
-        await api.post("api/todo_lists", { json: values }).json();
+        await mutateAsync(values.name);
+        reset();
         setOpen(false);
     };
 
@@ -35,10 +37,12 @@ export function CreateTodoListDialog() {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div>
                         <Label>Nom</Label>
-                        <Input {...register("name")} placeholder="Ex : Courses" />
+                        <Input {...register("name")} placeholder="Ex : Courses"/>
                     </div>
 
-                    <Button type="submit">Créer</Button>
+                    <Button type="submit" disabled={isLoading}>
+                        {isLoading ? "Création..." : "Créer"}
+                    </Button>
                 </form>
             </DialogContent>
         </Dialog>

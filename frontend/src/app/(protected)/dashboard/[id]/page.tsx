@@ -1,28 +1,16 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import {useParams} from "next/navigation";
+import {useQuery} from "@tanstack/react-query";
+import {api} from "@/lib/api";
 
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
+import {Card, CardContent, CardHeader, CardTitle,} from "@/components/ui/card";
 
-import { Progress } from "@/components/ui/progress";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Spinner } from "@/components/ui/spinner";
+import {Progress} from "@/components/ui/progress";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table";
+import {Button} from "@/components/ui/button";
+import {Separator} from "@/components/ui/separator";
+import {Spinner} from "@/components/ui/spinner";
 
 type Task = {
     id: number;
@@ -40,7 +28,7 @@ type TodoList = {
 };
 
 export default function TodoListPage() {
-    const { id } = useParams();
+    const {id} = useParams();
 
     // 1) On récupère les tâches
     const {
@@ -56,7 +44,7 @@ export default function TodoListPage() {
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <Spinner />
+                <Spinner/>
             </div>
         );
     }
@@ -83,7 +71,7 @@ export default function TodoListPage() {
                     </CardTitle>
 
                     <div className="mt-2">
-                        <Progress value={progress} />
+                        <Progress value={progress}/>
                         <div className="text-sm text-muted-foreground mt-1">
                             {completed}/{total} tâches terminées
                         </div>
@@ -91,7 +79,7 @@ export default function TodoListPage() {
                 </CardHeader>
             </Card>
 
-            <Separator />
+            <Separator/>
 
             {/* TASKS TABLE */}
             <Card>
