@@ -31,6 +31,22 @@ class TaskService
         return $qb->getQuery()->getResult();
     }
 
+    public function getByTodoList(User $user, int $todoListId): array
+    {
+        $todoList = $this->em->getRepository(TodoList::class)->find($todoListId);
+
+        if (!$todoList) {
+            throw new NotFoundHttpException("TodoList not found");
+        }
+
+        if ($todoList->getOwner()->getId() !== $user->getId()) {
+            throw new AccessDeniedHttpException("Not allowed");
+        }
+
+        return $this->em->getRepository(Task::class)
+            ->findBy(['todoList' => $todoList]);
+    }
+
     public function create(User $user, TaskRequest $request): Task
     {
         // validation

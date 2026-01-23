@@ -1,6 +1,6 @@
 "use client";
 
-import {useTodoListTasks} from "@/hooks/todoLists/useTodoListTasks";
+import {useTodoListTasks} from "@/hooks/tasks/useTodoListTasks";
 import {TodoList} from "@/types/todo";
 
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";

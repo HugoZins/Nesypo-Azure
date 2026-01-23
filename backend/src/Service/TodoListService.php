@@ -23,6 +23,21 @@ class TodoListService
         return $this->em->getRepository(TodoList::class)->findBy(['owner' => $user]);
     }
 
+    public function getOne(User $user, int $id): TodoList
+    {
+        $todoList = $this->em->getRepository(TodoList::class)->find($id);
+
+        if (!$todoList) {
+            throw new NotFoundHttpException("TodoList not found");
+        }
+
+        if ($todoList->getOwner()->getId() !== $user->getId()) {
+            throw new AccessDeniedHttpException("Not allowed");
+        }
+
+        return $todoList;
+    }
+
     public function create(User $user, TodoListRequest $request): TodoList
     {
         // validation

@@ -20,6 +20,14 @@ class TaskController extends AbstractController
         return $this->json($this->taskService->getAll($this->getUser()));
     }
 
+    #[Route('/api/todo-lists/{id}/tasks', methods: ['GET'])]
+    public function listByTodoList(int $id): JsonResponse
+    {
+        return $this->json(
+            $this->taskService->getByTodoList($this->getUser(), $id)
+        );
+    }
+
     #[Route('/api/tasks', name: 'tasks_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {

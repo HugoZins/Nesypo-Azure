@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { todoApi } from "@/lib/todo.api";
-import { Todo } from "@/types/todo";
+import {useQuery} from "@tanstack/react-query";
+import {todoApi} from "@/lib/todo.api";
+import {Todo} from "@/types/todo";
 
 export function useTodos(todoListId: number) {
     return useQuery<Todo[]>({
