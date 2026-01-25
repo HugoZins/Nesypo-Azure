@@ -12,7 +12,9 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class TaskController extends AbstractController
 {
-    public function __construct(private TaskService $taskService) {}
+    public function __construct(private TaskService $taskService)
+    {
+    }
 
     #[Route('/api/tasks', name: 'tasks', methods: ['GET'])]
     public function list(): JsonResponse
@@ -68,6 +70,30 @@ class TaskController extends AbstractController
                 'message' => $e->getMessage()
             ], 400);
         }
+    }
+
+    #[Route('/api/tasks/{id}', methods: ['PATCH'])]
+    public function patch(int $id, Request $request): JsonResponse
+    {
+        $content = $request->getContent();
+
+        $data = json_decode($content, true);
+
+        // si $data est null => JSON invalide
+        if ($data === null) {
+            return $this->json([
+                'error' => 'JSON invalide ou body vide',
+                'content' => $content
+            ], 400);
+        }
+
+        $task = $this->taskService->patch(
+            $this->getUser(),
+            $id,
+            $data
+        );
+
+        return $this->json($task, 200, [], ['groups' => ['task:read']]);
     }
 
     #[Route('/api/tasks/{id}', name: 'tasks_delete', methods: ['DELETE'])]

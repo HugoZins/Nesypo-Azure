@@ -1,5 +1,5 @@
-import { api } from "./api";
-import { Task } from "@/types/todo";
+import {api} from "./api";
+import {Task} from "@/types/todo";
 
 export const taskApi = {
     getByTodoList(todoListId: number) {
@@ -11,17 +11,19 @@ export const taskApi = {
     create(todoListId: number, title: string) {
         return api
             .post("api/tasks", {
-                json: { title, todoListId },
+                json: {title, todoListId},
             })
             .json<Task>();
     },
 
     update(id: number, payload: Partial<Task>) {
-        return api
-            .put(`api/tasks/${id}`, {
-                json: payload,
-            })
-            .json<Task>();
+        return api.put(`api/tasks/${id}`, {
+            json: payload,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+        }).json<Task>();
     },
 
     delete(id: number) {

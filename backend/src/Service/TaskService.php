@@ -16,8 +16,10 @@ class TaskService
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private ValidatorInterface $validator
-    ) {}
+        private ValidatorInterface     $validator
+    )
+    {
+    }
 
     public function getAll(User $user): array
     {
@@ -49,7 +51,6 @@ class TaskService
 
     public function create(User $user, TaskRequest $request): Task
     {
-        // validation
         $errors = $this->validator->validate($request);
         if (count($errors) > 0) {
             $messages = [];
@@ -88,13 +89,19 @@ class TaskService
             throw new NotFoundHttpException("Task not found");
         }
 
-        $todoList = $task->getTodoList();
-        if ($todoList->getOwner()->getId() !== $user->getId()) {
+        if ($task->getTodoList()->getOwner()->getId() !== $user->getId()) {
             throw new AccessDeniedHttpException("Not allowed");
         }
 
-        // validation
-        $errors = $this->validator->validate($request);
+        if ($request->title !== null) {
+            $task->setTitle($request->title);
+        }
+
+        if ($request->done !== null) {
+            $task->setDone($request->done);
+        }
+
+        $errors = $this->validator->validate($task);
         if (count($errors) > 0) {
             $messages = [];
             foreach ($errors as $error) {
@@ -103,8 +110,30 @@ class TaskService
             throw new BadRequestHttpException(implode(" | ", $messages));
         }
 
-        $task->setTitle($request->title);
-        $task->setDone($request->done);
+        $this->em->flush();
+
+        return $task;
+    }
+
+    public function patch(User $user, int $id, array $data): Task
+    {
+        $task = $this->em->getRepository(Task::class)->find($id);
+
+        if (!$task) {
+            throw new NotFoundHttpException("Task not found");
+        }
+
+        if ($task->getTodoList()->getOwner()->getId() !== $user->getId()) {
+            throw new AccessDeniedHttpException("Not allowed");
+        }
+
+        if (array_key_exists('done', $data)) {
+            $task->setDone((bool)$data['done']);
+        }
+
+        if (array_key_exists('title', $data)) {
+            $task->setTitle($data['title']);
+        }
 
         $this->em->flush();
 
