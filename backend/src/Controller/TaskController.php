@@ -30,7 +30,7 @@ class TaskController extends AbstractController
         );
     }
 
-    #[Route('/api/tasks', name: 'tasks_create', methods: ['POST'])]
+    #[Route('/api/tasks-custom', name: 'tasks_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
         $dto = new TaskRequest();
@@ -38,6 +38,7 @@ class TaskController extends AbstractController
 
         $dto->title = $data['title'] ?? null;
         $dto->done = $data['done'] ?? null;
+        $dto->priority = $data['priority'] ?? null;
         $dto->todoListId = $data['todoListId'] ?? null;
 
         try {

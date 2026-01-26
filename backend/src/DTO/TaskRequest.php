@@ -14,11 +14,10 @@ class TaskRequest
     )]
     public ?string $title = null;
 
-    #[Assert\NotNull(message: "Le statut est requis.")]
     public ?bool $done = null;
 
     #[Assert\NotNull]
-    #[Assert\Choice(choices: TaskPriority::class)]
+    #[Assert\Choice(choices: TaskPriority::VALUES)]
     public string $priority;
 
     #[Assert\NotNull(message: "La TodoList est requise.")]

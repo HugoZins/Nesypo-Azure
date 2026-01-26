@@ -10,23 +10,18 @@ export const taskApi = {
 
     create(todoListId: number, title: string) {
         return api
-            .post("api/tasks", {
-                json: {title, todoListId},
-            })
+            .post("api/tasks", {json: {title, todoListId},})
             .json<Task>();
     },
 
     update(id: number, payload: Partial<Task>) {
-        return api.put(`api/tasks/${id}`, {
-            json: payload,
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            },
-        }).json<Task>();
+        return api
+            .put(`api/tasks/${id}`, {json: payload,})
+            .json<Task>();
     },
 
     delete(id: number) {
-        return api.delete(`api/tasks/${id}`).json();
+        return api.delete(`api/tasks/${id}`)
+            .json();
     },
 };

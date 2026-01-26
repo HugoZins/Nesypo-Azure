@@ -6,6 +6,7 @@ use App\DTO\TaskRequest;
 use App\Entity\Task;
 use App\Entity\TodoList;
 use App\Entity\User;
+use App\Enum\TaskPriority;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -72,7 +73,14 @@ class TaskService
 
         $task = new Task();
         $task->setTitle($request->title);
-        $task->setDone($request->done);
+
+        // IMPORTANT : le done par défaut
+        $task->setDone($request->done ?? false);
+
+        // IMPORTANT : set priority
+        $task->setPriority(TaskPriority::from($request->priority));
+
+        // IMPORTANT : set todoList
         $task->setTodoList($todoList);
 
         $this->em->persist($task);
