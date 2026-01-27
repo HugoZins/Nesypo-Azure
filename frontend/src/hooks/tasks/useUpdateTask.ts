@@ -50,7 +50,7 @@ export function useUpdateTask(todoListId: number) {
         },
 
         onSettled: () => {
-            // 🔥 important : invalidate tasks + todoLists
+            // important : invalidate tasks + todoLists
             queryClient.invalidateQueries({queryKey: ["tasks", todoListId]});
             queryClient.invalidateQueries({queryKey: ["todoLists"]});
         },

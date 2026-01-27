@@ -7,7 +7,6 @@ import {TodoList} from "@/types/todo";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Progress} from "@/components/ui/progress";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table";
-import {Button} from "@/components/ui/button";
 import {Separator} from "@/components/ui/separator";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Spinner} from "@/components/ui/spinner";
@@ -42,7 +41,7 @@ export function TodoListTasks({todoList}: { todoList: TodoList }) {
                 <CardHeader>
                     <CardTitle className="flex justify-between items-center">
                         <span>{todoList.title}</span>
-                        <EditTodoListDialog todoList={todoList} />
+                        <EditTodoListDialog todoList={todoList}/>
                     </CardTitle>
 
                     <div className="mt-2">
