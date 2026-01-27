@@ -3,7 +3,7 @@
 import {useForm, Controller} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {loginSchema} from "@/lib/validation/auth";
-import {login} from "@/lib/auth.api";
+import {authApi} from "@/lib/authApi";
 import {useRouter} from "next/navigation";
 import {z} from "zod";
 
@@ -27,7 +27,7 @@ export default function LoginForm() {
 
     const onSubmit = async (data: LoginFormValues) => {
         try {
-            await login(data.email, data.password);
+            await authApi.login(data.email, data.password);
             router.push("/dashboard");
         } catch {
             alert("Identifiants invalides");
@@ -89,6 +89,16 @@ export default function LoginForm() {
                     <Button className="w-full" disabled={form.formState.isSubmitting}>
                         Se connecter
                     </Button>
+                    <div className="text-center text-sm text-muted-foreground">
+                        Pas encore de compte ?{" "}
+                        <a
+                            href="/register"
+                            className="font-medium text-primary hover:underline"
+                        >
+                            Inscrivez-vous
+                        </a>
+                    </div>
+
                 </form>
             </CardContent>
         </Card>

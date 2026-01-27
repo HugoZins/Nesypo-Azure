@@ -1,11 +1,12 @@
 "use client";
 
 import {useState} from "react";
+import {useRouter} from "next/navigation";
 import {useForm, Controller} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {registerSchema} from "@/lib/validation/auth";
 import {z} from "zod";
-import {register} from "@/lib/auth.api";
+import {authApi} from "@/lib/authApi";
 
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Label} from "@/components/ui/label";
@@ -16,6 +17,9 @@ import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
+
+    const router = useRouter();
+
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const form = useForm<RegisterFormValues>({
@@ -31,12 +35,25 @@ export default function RegisterForm() {
         setErrorMessage(null);
 
         try {
-            await register(data.email, data.password, data.passwordConfirm);
-            alert("Inscription réussie !");
+            await authApi.register(
+                data.email,
+                data.password,
+                data.passwordConfirm
+            );
+
+            await authApi.login(data.email, data.password);
+
+            router.push("/dashboard");
+
         } catch (e: any) {
-            setErrorMessage(e?.message ?? "Erreur inconnue");
+            setErrorMessage(
+                e?.response?.data?.message ??
+                e?.message ??
+                "Erreur lors de l’inscription"
+            );
         }
     };
+
 
     return (
         <Card className="w-[380px]">

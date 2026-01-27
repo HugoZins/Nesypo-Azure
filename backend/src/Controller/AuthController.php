@@ -80,4 +80,21 @@ class AuthController extends AbstractController
             return $this->json(['message' => 'Invalid credentials'], 401);
         }
     }
+
+    #[Route('/api/logout', name: 'api_logout', methods: ['POST'])]
+    public function logout(): JsonResponse
+    {
+        $response = new JsonResponse(['status' => 'logged_out']);
+
+        $response->headers->clearCookie(
+            'token',
+            '/',
+            null,
+            true,
+            true,
+            'none'
+        );
+
+        return $response;
+    }
 }
