@@ -39,9 +39,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->todoLists = new ArrayCollection();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getEmail(): ?string { return $this->email; }
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
 
     public function setEmail(string $email): self
     {
@@ -73,14 +79,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getSalt(): ?string { return null; }
+    public function getSalt(): ?string
+    {
+        return null;
+    }
 
     public function getUserIdentifier(): string
     {
         return $this->email;
     }
 
-    public function eraseCredentials(): void {}
+    public function eraseCredentials(): void
+    {
+    }
 
     public function getTodoLists(): Collection
     {

@@ -109,6 +109,10 @@ class TaskService
             $task->setDone($request->done);
         }
 
+        if ($request->priority !== null) {
+            $task->setPriority(TaskPriority::from($request->priority));
+        }
+
         $errors = $this->validator->validate($task);
         if (count($errors) > 0) {
             $messages = [];
@@ -141,6 +145,10 @@ class TaskService
 
         if (array_key_exists('title', $data)) {
             $task->setTitle($data['title']);
+        }
+
+        if (array_key_exists('priority', $data)) {
+            $task->setPriority(TaskPriority::from($data['priority']));
         }
 
         $this->em->flush();

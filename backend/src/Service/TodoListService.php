@@ -15,8 +15,10 @@ class TodoListService
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private ValidatorInterface $validator
-    ) {}
+        private ValidatorInterface     $validator
+    )
+    {
+    }
 
     public function getAll(User $user): array
     {

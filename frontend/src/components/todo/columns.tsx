@@ -5,15 +5,14 @@ import {TodoList} from "@/types/todo"
 import {Progress} from "@/components/ui/progress"
 import Link from "next/link"
 import {Button} from "@/components/ui/button"
+import {DeleteTodoListAlert} from "@/components/todo/DeleteTodoListAlert"
 
 export const columns: ColumnDef<TodoList>[] = [
     {
         accessorKey: "title",
         header: "Nom",
         cell: ({row}) => (
-            <span className="font-medium">
-                {row.original.title}
-                </span>
+            <span className="font-medium">{row.original.title}</span>
         ),
     },
     {
@@ -25,9 +24,7 @@ export const columns: ColumnDef<TodoList>[] = [
             return (
                 <div className="flex items-center gap-2">
                     <Progress value={progress} className="w-32"/>
-                    <span className="text-sm text-muted-foreground">
-                {progress}%
-                </span>
+                    <span className="text-sm text-muted-foreground">{progress}%</span>
                 </div>
             )
         },
@@ -36,11 +33,17 @@ export const columns: ColumnDef<TodoList>[] = [
         id: "actions",
         header: "Actions",
         cell: ({row}) => (
-            <Link href={`/dashboard/todo-lists/${row.original.id}`}>
-                <Button variant="link" size="sm">
-                    Voir
-                </Button>
-            </Link>
+            <div className="flex gap-2">
+                {/* Bouton Voir */}
+                <Link href={`/dashboard/todo-lists/${row.original.id}`}>
+                    <Button variant="link" size="sm">
+                        Voir
+                    </Button>
+                </Link>
+
+                {/* Bouton Supprimer */}
+                <DeleteTodoListAlert todoList={row.original}/>
+            </div>
         ),
     },
 ]

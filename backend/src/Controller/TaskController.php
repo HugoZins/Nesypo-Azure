@@ -60,6 +60,7 @@ class TaskController extends AbstractController
 
         $dto->title = $data['title'] ?? null;
         $dto->done = $data['done'] ?? null;
+        $dto->priority = $data['priority'] ?? null;
         $dto->todoListId = $data['todoListId'] ?? null;
 
         try {

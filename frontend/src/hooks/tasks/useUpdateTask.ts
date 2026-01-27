@@ -1,10 +1,14 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { taskApi } from "@/lib/taskApi";
-import { Task } from "@/types/todo";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {taskApi} from "@/lib/taskApi";
+import {Task} from "@/types/todo";
 
 type UpdateTaskPayload = {
     id: number;
-    data: Partial<Task>;
+    data: Partial<{
+        title: string;
+        priority: "low" | "medium" | "high";
+        done: boolean;
+    }>;
 };
 
 type MutationContext = {
@@ -15,9 +19,9 @@ export function useUpdateTask(todoListId: number) {
     const queryClient = useQueryClient();
 
     return useMutation<Task, unknown, UpdateTaskPayload, MutationContext>({
-        mutationFn: ({ id, data }) => taskApi.update(id, data),
+        mutationFn: ({id, data}) => taskApi.update(id, data),
 
-        onMutate: async ({ id, data }) => {
+        onMutate: async ({id, data}) => {
             await queryClient.cancelQueries({
                 queryKey: ["tasks", todoListId],
             });
@@ -30,10 +34,10 @@ export function useUpdateTask(todoListId: number) {
             queryClient.setQueryData<Task[]>(
                 ["tasks", todoListId],
                 (old) =>
-                    old?.map((task) => (task.id === id ? { ...task, ...data } : task))
+                    old?.map((task) => (task.id === id ? {...task, ...data} : task))
             );
 
-            return { previousTasks };
+            return {previousTasks};
         },
 
         onError: (_err, _vars, context) => {
@@ -47,8 +51,8 @@ export function useUpdateTask(todoListId: number) {
 
         onSettled: () => {
             // 🔥 important : invalidate tasks + todoLists
-            queryClient.invalidateQueries({ queryKey: ["tasks", todoListId] });
-            queryClient.invalidateQueries({ queryKey: ["todoLists"] });
+            queryClient.invalidateQueries({queryKey: ["tasks", todoListId]});
+            queryClient.invalidateQueries({queryKey: ["todoLists"]});
         },
     });
 }

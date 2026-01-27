@@ -12,7 +12,9 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class TodoListController extends AbstractController
 {
-    public function __construct(private TodoListService $todoListService) {}
+    public function __construct(private TodoListService $todoListService)
+    {
+    }
 
     #[Route('/api/todo-lists', name: 'todo_lists', methods: ['GET'])]
     public function list(): JsonResponse

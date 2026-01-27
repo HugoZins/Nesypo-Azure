@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { todoListApi } from "@/lib/todoListApi";
-import { TodoList } from "@/types/todo";
+import {useQuery} from "@tanstack/react-query";
+import {todoListApi} from "@/lib/todoListApi";
+import {TodoList} from "@/types/todo";
 
 export function useTodoList(id?: number | string) {
     return useQuery<TodoList>({

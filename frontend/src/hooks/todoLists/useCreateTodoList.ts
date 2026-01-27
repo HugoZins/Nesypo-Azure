@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { todoListApi } from "@/lib/todoListApi";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {todoListApi} from "@/lib/todoListApi";
 
 export function useCreateTodoList() {
     const queryClient = useQueryClient();

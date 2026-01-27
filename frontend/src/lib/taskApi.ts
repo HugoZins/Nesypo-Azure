@@ -16,7 +16,7 @@ export const taskApi = {
 
     update(id: number, payload: Partial<Task>) {
         return api
-            .put(`api/tasks/${id}`, {json: payload,})
+            .patch(`api/tasks/${id}`, {json: payload,})
             .json<Task>();
     },
 

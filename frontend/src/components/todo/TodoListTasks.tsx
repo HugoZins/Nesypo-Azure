@@ -2,7 +2,7 @@
 
 import {useTasks} from "@/hooks/tasks/useTasks";
 import {useUpdateTask} from "@/hooks/tasks/useUpdateTask";
-import {TodoList, Task} from "@/types/todo";
+import {TodoList} from "@/types/todo";
 
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Progress} from "@/components/ui/progress";
@@ -11,6 +11,9 @@ import {Button} from "@/components/ui/button";
 import {Separator} from "@/components/ui/separator";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Spinner} from "@/components/ui/spinner";
+import {EditTaskDialog} from "@/components/todo/EditTaskDialog";
+import {DeleteTaskAlert} from "@/components/todo/DeleteTaskAlert";
+import {EditTodoListDialog} from "@/components/todo/EditTodoListDialog";
 
 interface TodoListTasksProps {
     todoList: TodoList;
@@ -39,7 +42,7 @@ export function TodoListTasks({todoList}: { todoList: TodoList }) {
                 <CardHeader>
                     <CardTitle className="flex justify-between items-center">
                         <span>{todoList.title}</span>
-                        <Button variant="outline">Modifier</Button>
+                        <EditTodoListDialog todoList={todoList} />
                     </CardTitle>
 
                     <div className="mt-2">
@@ -84,7 +87,7 @@ export function TodoListTasks({todoList}: { todoList: TodoList }) {
                                                 onCheckedChange={(checked) =>
                                                     updateTask.mutate({
                                                         id: task.id,
-                                                        data: {done: Boolean(checked)},
+                                                        data: {done: checked === true},
                                                     })
                                                 }
                                             />
@@ -107,9 +110,8 @@ export function TodoListTasks({todoList}: { todoList: TodoList }) {
                                         </TableCell>
 
                                         <TableCell>
-                                            <Button variant="outline" size="sm">
-                                                Modifier
-                                            </Button>
+                                            <EditTaskDialog task={task} todoListId={todoList.id}/>
+                                            <DeleteTaskAlert task={task} todoListId={todoList.id}/>
                                         </TableCell>
                                     </TableRow>
                                 ))}
