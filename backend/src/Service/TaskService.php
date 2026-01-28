@@ -17,13 +17,18 @@ class TaskService
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private ValidatorInterface     $validator
+        private ValidatorInterface     $validator,
+        private AuthorizationService   $authorizationService
     )
     {
     }
 
     public function getAll(User $user): array
     {
+        if ($this->authorizationService->isAdmin($user)) {
+            return $this->em->getRepository(Task::class)->findAll();
+        }
+
         $qb = $this->em->createQueryBuilder();
         $qb->select('t')
             ->from(Task::class, 't')
@@ -39,11 +44,11 @@ class TaskService
         $todoList = $this->em->getRepository(TodoList::class)->find($todoListId);
 
         if (!$todoList) {
-            throw new NotFoundHttpException("TodoList not found");
+            throw new NotFoundHttpException('TodoList not found');
         }
 
-        if ($todoList->getOwner()->getId() !== $user->getId()) {
-            throw new AccessDeniedHttpException("Not allowed");
+        if (!$this->authorizationService->canManageTodoList($user, $todoList)) {
+            throw new AccessDeniedHttpException('Not allowed');
         }
 
         return $this->em->getRepository(Task::class)
@@ -58,29 +63,23 @@ class TaskService
             foreach ($errors as $error) {
                 $messages[] = $error->getMessage();
             }
-            throw new BadRequestHttpException(implode(" | ", $messages));
+            throw new BadRequestHttpException(implode(' | ', $messages));
         }
 
         $todoList = $this->em->getRepository(TodoList::class)->find($request->todoListId);
 
         if (!$todoList) {
-            throw new NotFoundHttpException("TodoList not found");
+            throw new NotFoundHttpException('TodoList not found');
         }
 
-        if ($todoList->getOwner()->getId() !== $user->getId()) {
-            throw new AccessDeniedHttpException("Not allowed");
+        if (!$this->authorizationService->canManageTodoList($user, $todoList)) {
+            throw new AccessDeniedHttpException('Not allowed');
         }
 
         $task = new Task();
         $task->setTitle($request->title);
-
-        // IMPORTANT : le done par défaut
         $task->setDone($request->done ?? false);
-
-        // IMPORTANT : set priority
         $task->setPriority(TaskPriority::from($request->priority));
-
-        // IMPORTANT : set todoList
         $task->setTodoList($todoList);
 
         $this->em->persist($task);
@@ -94,11 +93,11 @@ class TaskService
         $task = $this->em->getRepository(Task::class)->find($id);
 
         if (!$task) {
-            throw new NotFoundHttpException("Task not found");
+            throw new NotFoundHttpException('Task not found');
         }
 
-        if ($task->getTodoList()->getOwner()->getId() !== $user->getId()) {
-            throw new AccessDeniedHttpException("Not allowed");
+        if (!$this->authorizationService->canManageTask($user, $task)) {
+            throw new AccessDeniedHttpException('Not allowed');
         }
 
         if ($request->title !== null) {
@@ -119,7 +118,7 @@ class TaskService
             foreach ($errors as $error) {
                 $messages[] = $error->getMessage();
             }
-            throw new BadRequestHttpException(implode(" | ", $messages));
+            throw new BadRequestHttpException(implode(' | ', $messages));
         }
 
         $this->em->flush();
@@ -132,11 +131,11 @@ class TaskService
         $task = $this->em->getRepository(Task::class)->find($id);
 
         if (!$task) {
-            throw new NotFoundHttpException("Task not found");
+            throw new NotFoundHttpException('Task not found');
         }
 
-        if ($task->getTodoList()->getOwner()->getId() !== $user->getId()) {
-            throw new AccessDeniedHttpException("Not allowed");
+        if (!$this->authorizationService->canManageTask($user, $task)) {
+            throw new AccessDeniedHttpException('Not allowed');
         }
 
         if (array_key_exists('done', $data)) {
@@ -161,12 +160,11 @@ class TaskService
         $task = $this->em->getRepository(Task::class)->find($id);
 
         if (!$task) {
-            throw new NotFoundHttpException("Task not found");
+            throw new NotFoundHttpException('Task not found');
         }
 
-        $todoList = $task->getTodoList();
-        if ($todoList->getOwner()->getId() !== $user->getId()) {
-            throw new AccessDeniedHttpException("Not allowed");
+        if (!$this->authorizationService->canManageTask($user, $task)) {
+            throw new AccessDeniedHttpException('Not allowed');
         }
 
         $this->em->remove($task);

@@ -19,8 +19,9 @@ class TodoListController extends AbstractController
     #[Route('/api/todo-lists', name: 'todo_lists', methods: ['GET'])]
     public function list(): JsonResponse
     {
-        $data = $this->todoListService->getAll($this->getUser());
-        return $this->json($data);
+        return $this->json(
+            $this->todoListService->getAll($this->getUser())
+        );
     }
 
     #[Route('/api/todo-lists/{id}', name: 'todo_lists_show', methods: ['GET'])]

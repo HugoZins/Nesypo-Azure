@@ -42,6 +42,8 @@ class AuthService
             $this->passwordHasher->hashPassword($user, $request->password)
         );
 
+        $user->setRoles(['ROLE_USER']);
+
         $this->em->persist($user);
         $this->em->flush();
 
@@ -60,6 +62,5 @@ class AuthService
         }
 
         return $this->jwtManager->create($user);
-        dump($jwt);
     }
 }

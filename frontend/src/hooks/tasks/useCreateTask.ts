@@ -13,6 +13,8 @@ export function useCreateTask(todoListId: number) {
 
     return useMutation<Task, unknown, CreateTaskPayload>({
         mutationFn: (payload) => api.post("api/tasks-custom", {json: payload}).json(),
-        onSuccess: () => queryClient.invalidateQueries(["tasks", todoListId]),
+        onSuccess: () => {
+            queryClient.invalidateQueries(["todoLists"]); // invalide la liste complète
+        },
     });
 }

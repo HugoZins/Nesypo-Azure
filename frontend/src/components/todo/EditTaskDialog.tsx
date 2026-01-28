@@ -8,28 +8,28 @@ import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/components/ui/select";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {taskSchema} from "@/lib/validation/task";
 
 import {Task} from "@/types/todo";
 import {useUpdateTask} from "@/hooks/tasks/useUpdateTask";
 
-type FormValues = {
-    title: string;
-    priority: "low" | "medium" | "high";
-};
+type FormValues = z.infer<typeof taskSchema>;
 
-export function EditTaskDialog({
-                                   task,
-                                   todoListId,
-                               }: {
+export function EditTaskDialog({task, todoListId,}: {
     task: Task;
     todoListId: number;
 }) {
+
     const [open, setOpen] = useState(false);
 
-    const {control, register, handleSubmit} = useForm<FormValues>({
+    const {register, handleSubmit, control, formState: {errors}} = useForm<FormValues>({
+        resolver: zodResolver(taskSchema),
         defaultValues: {
             title: task.title,
             priority: task.priority ?? "medium",
+            done: task.done ?? false,
+            todoListId,
         },
     });
 
@@ -61,7 +61,8 @@ export function EditTaskDialog({
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div>
                         <Label>Titre</Label>
-                        <Input {...register("title", {required: true})} />
+                        <Input {...register("title")} />
+                        {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
                     </div>
 
                     <div>

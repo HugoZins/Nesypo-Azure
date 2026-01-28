@@ -15,4 +15,15 @@ class TodoListRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, TodoList::class);
     }
+
+    public function findByOwner(User $user): array
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.owner = :user')
+            ->setParameter('user', $user)
+            ->orderBy('t.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
 }

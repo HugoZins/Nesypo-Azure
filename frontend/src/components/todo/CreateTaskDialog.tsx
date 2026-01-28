@@ -3,6 +3,10 @@
 import {useState} from "react";
 import {useForm, Controller} from "react-hook-form";
 
+import {taskSchema} from "@/lib/validation/task";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {z} from "zod";
+
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,} from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
@@ -11,23 +15,14 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/
 
 import {useCreateTask} from "@/hooks/tasks/useCreateTask";
 
-type FormValues = {
-    title: string;
-    priority: "LOW" | "MEDIUM" | "HIGH";
-};
+type FormValues = z.infer<typeof taskSchema>;
 
 export function CreateTaskDialog({todoListId}: { todoListId: number }) {
     const [open, setOpen] = useState(false);
 
-    const {
-        register,
-        handleSubmit,
-        reset,
-        control,
-    } = useForm<FormValues>({
-        defaultValues: {
-            priority: "MEDIUM",
-        },
+    const {register, handleSubmit, reset, control, formState: {errors}} = useForm<FormValues>({
+        resolver: zodResolver(taskSchema),
+        defaultValues: {priority: "medium", done: false, todoListId},
     });
 
     const {mutateAsync, isLoading} = useCreateTask(todoListId);
@@ -60,29 +55,32 @@ export function CreateTaskDialog({todoListId}: { todoListId: number }) {
                     {/* TITRE */}
                     <div>
                         <Label>Titre</Label>
-                        <Input
-                            {...register("title", {required: true})}
-                            placeholder="Ex : Acheter du lait"
-                        />
+                        <Input {...register("title")} placeholder="Ex : Acheter du lait"/>
+                        {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
                     </div>
 
                     {/* PRIORITÉ */}
-                    <div>
+                    <div className="space-y-1">
                         <Label>Priorité</Label>
                         <Controller
                             name="priority"
                             control={control}
                             render={({field}) => (
-                                <Select value={field.value} onValueChange={field.onChange}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Choisir une priorité"/>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="low">Basse</SelectItem>
-                                        <SelectItem value="medium">Moyenne</SelectItem>
-                                        <SelectItem value="high">Haute</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <>
+                                    <Select value={field.value} onValueChange={field.onChange}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Choisir une priorité"/>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="low">Basse</SelectItem>
+                                            <SelectItem value="medium">Moyenne</SelectItem>
+                                            <SelectItem value="high">Haute</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.priority && (
+                                        <p className="text-red-500 text-sm">{errors.priority.message}</p>
+                                    )}
+                                </>
                             )}
                         />
                     </div>

@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import {flexRender, getCoreRowModel, getPaginationRowModel, useReactTable,} from "@tanstack/react-table"
 
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table"
