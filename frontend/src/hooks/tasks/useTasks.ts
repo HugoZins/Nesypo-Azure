@@ -7,5 +7,6 @@ export function useTasks(todoListId?: number) {
         queryKey: ["tasks", todoListId],
         queryFn: () => taskApi.getByTodoList(todoListId!),
         enabled: !!todoListId,
+        staleTime: 1000 * 60 * 2,
     });
 }
