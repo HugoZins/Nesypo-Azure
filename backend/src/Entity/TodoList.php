@@ -10,24 +10,26 @@ use Doctrine\Common\Collections\Collection;
 use App\Entity\Traits\TimestampableTrait;
 
 #[ORM\Entity(repositoryClass: TodoListRepository::class)]
-#[ApiResource]
 #[ORM\HasLifecycleCallbacks]
 class TodoList
 {
     use TimestampableTrait;
 
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
+    #[Groups(["todo_list:read"])]
     private ?int $id = null;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Groups(["todo_list:read"])]
     private ?string $title = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "todoLists")]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $owner = null;
-
-    #[ORM\OneToMany(mappedBy: "todoList", targetEntity: Task::class, cascade: ["persist", "remove"], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: "todoList", targetEntity: Task::class)]
+    #[Groups(["todo_list:read"])]
     private Collection $tasks;
+
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "todoLists")]
+    #[Groups(["todo_list:read"])]
+    private ?User $owner = null;
 
     public function __construct()
     {

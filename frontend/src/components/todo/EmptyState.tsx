@@ -1,12 +1,10 @@
-import {Empty} from "@/components/ui/empty";
+import { Empty } from "@/components/ui/empty"
 
 export function EmptyState() {
-    return (
-        <Empty>
-            <div className="text-lg font-bold">Aucune todolist</div>
-            <div className="text-sm text-muted-foreground">
-                Créez une nouvelle liste pour commencer.
-            </div>
-        </Empty>
-    );
+	return (
+		<Empty>
+			<div className="font-bold text-lg">Aucune todolist</div>
+			<div className="text-muted-foreground text-sm">Créez une nouvelle liste pour commencer.</div>
+		</Empty>
+	)
 }

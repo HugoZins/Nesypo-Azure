@@ -1,10 +1,10 @@
 export type TodoList = {
-    id: number;
-    title: string;
-};
+	id: number
+	title: string
+}
 
 export type Task = {
-    id: number;
-    title: string;
-    done: boolean;
-};
+	id: number
+	title: string
+	done: boolean
+}

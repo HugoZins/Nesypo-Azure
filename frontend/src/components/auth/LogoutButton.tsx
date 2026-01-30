@@ -1,23 +1,25 @@
-"use client";
+"use client"
 
-import {logout} from "@/lib/authApi";
+import { logout } from "@/lib/authApi"
 
 export default function LogoutButton() {
-    const handleLogout = async () => {
-        try {
-            await logout();
-        } finally {
-            // Le middleware prendra le relais
-            window.location.href = "/login";
-        }
-    };
+	const handleLogout = async () => {
+		try {
+			await logout()
+		} finally {
+			// Le middleware prendra le relais
+			window.location.href = "/login"
+		}
+	}
 
-    return (
-        <button
-            onClick={handleLogout}
-            className="text-sm text-red-600 hover:underline"
-        >
-            Se déconnecter
-        </button>
-    );
+	return (
+		<button
+			type="button"
+			onClick={handleLogout}
+			className="text-red-600 text-sm hover:underline"
+		>
+			Se déconnecter
+		</button>
+
+	)
 }

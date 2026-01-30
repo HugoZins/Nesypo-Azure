@@ -4,72 +4,112 @@ namespace App\Controller;
 
 use App\DTO\TodoListRequest;
 use App\Service\TodoListService;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
+#[OA\Tag(name: "TodoLists")]
 class TodoListController extends AbstractController
 {
     public function __construct(private TodoListService $todoListService)
     {
     }
 
-    #[Route('/api/todo-lists', name: 'todo_lists', methods: ['GET'])]
+    // Lister toutes les todo lists
+    #[Route('/api/todo-lists', methods: ['GET'])]
+    #[OA\Get(
+        summary: "Liste des todo lists",
+        security: [["cookieAuth" => []]]
+    )]
     public function list(): JsonResponse
     {
-        return $this->json(
-            $this->todoListService->getAll($this->getUser())
-        );
+        $todoLists = $this->todoListService->getAll($this->getUser());
+        return $this->json($todoLists, 200, [], ['groups' => ['todo_list:read']]);
     }
 
-    #[Route('/api/todo-lists/{id}', name: 'todo_lists_show', methods: ['GET'])]
-    public function show(int $id): JsonResponse
-    {
-        $todoList = $this->todoListService->getOne($this->getUser(), $id);
-        return $this->json($todoList);
-    }
-
-    #[Route('/api/todo-lists', name: 'todo_lists_create', methods: ['POST'])]
+    // Créer une todo list
+    #[Route('/api/todo-lists', methods: ['POST'])]
+    #[OA\Post(
+        summary: "Créer une todo list",
+        security: [["cookieAuth" => []]],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ["title"],
+                properties: [
+                    new OA\Property(property: "title", type: "string")
+                ]
+            )
+        )
+    )]
     public function create(Request $request): JsonResponse
     {
         $dto = new TodoListRequest();
         $data = json_decode($request->getContent(), true);
         $dto->title = $data['title'] ?? null;
 
-        try {
-            $todoList = $this->todoListService->create($this->getUser(), $dto);
-            return $this->json($todoList);
-        } catch (BadRequestHttpException $e) {
-            return $this->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 400);
-        }
+        return $this->json(
+            $this->todoListService->create($this->getUser(), $dto)
+        );
     }
 
-    #[Route('/api/todo-lists/{id}', name: 'todo_lists_update', methods: ['PUT'])]
+    // Récupérer une todo list par ID
+    #[Route('/api/todo-lists/{id}', methods: ['GET'])]
+    #[OA\Get(
+        summary: "Récupérer une todo list par ID",
+        security: [["cookieAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, description: "ID de la todo list", schema: new OA\Schema(type: "integer"))
+        ]
+    )]
+    public function show(int $id): JsonResponse
+    {
+        $todoList = $this->todoListService->getOne($this->getUser(), $id);
+        return $this->json($todoList, 200, [], ['groups' => ['todo_list:read']]);
+    }
+
+    // Mettre à jour une todo list
+    #[Route('/api/todo-lists/{id}', methods: ['PUT'])]
+    #[OA\Put(
+        summary: "Mettre à jour une todo list",
+        security: [["cookieAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, description: "ID de la todo list", schema: new OA\Schema(type: "integer"))
+        ],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ["title"],
+                properties: [
+                    new OA\Property(property: "title", type: "string")
+                ]
+            )
+        )
+    )]
     public function update(int $id, Request $request): JsonResponse
     {
         $dto = new TodoListRequest();
         $data = json_decode($request->getContent(), true);
         $dto->title = $data['title'] ?? null;
 
-        try {
-            $todoList = $this->todoListService->update($this->getUser(), $id, $dto);
-            return $this->json($todoList);
-        } catch (BadRequestHttpException $e) {
-            return $this->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 400);
-        }
+        return $this->json(
+            $this->todoListService->update($this->getUser(), $id, $dto)
+        );
     }
 
-    #[Route('/api/todo-lists/{id}', name: 'todo_lists_delete', methods: ['DELETE'])]
+    // Supprimer une todo list
+    #[Route('/api/todo-lists/{id}', methods: ['DELETE'])]
+    #[OA\Delete(
+        summary: "Supprimer une todo list",
+        security: [["cookieAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, description: "ID de la todo list", schema: new OA\Schema(type: "integer"))
+        ]
+    )]
     public function delete(int $id): JsonResponse
     {
-        return $this->json($this->todoListService->delete($this->getUser(), $id));
+        return $this->json(
+            $this->todoListService->delete($this->getUser(), $id)
+        );
     }
 }

@@ -1,14 +1,14 @@
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {todoListApi} from "@/lib/todoListApi";
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { todoListApi } from "@/lib/todoListApi"
 
 export function useDeleteTodoList() {
-    const queryClient = useQueryClient();
+	const queryClient = useQueryClient()
 
-    return useMutation({
-        mutationFn: (id: number) => todoListApi.delete(id),
+	return useMutation({
+		mutationFn: (id: number) => todoListApi.delete(id),
 
-        onSuccess: () => {
-            queryClient.invalidateQueries(["todoLists"]);
-        },
-    });
+		onSuccess: () => {
+			queryClient.invalidateQueries(["todoLists"])
+		},
+	})
 }

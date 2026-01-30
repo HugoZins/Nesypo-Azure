@@ -9,26 +9,30 @@ use App\Enum\TaskPriority;
 use App\Entity\Traits\TimestampableTrait;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
-#[ApiResource]
 #[ORM\HasLifecycleCallbacks]
 class Task
 {
     use TimestampableTrait;
 
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
+    #[Groups(["task:read", "todo_list:read"])]
     private ?int $id = null;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Groups(["task:read", "todo_list:read"])]
     private ?string $title = null;
 
     #[ORM\Column(type: "boolean")]
+    #[Groups(["task:read"])]
     private bool $done = false;
 
     #[ORM\Column(type: "string", enumType: TaskPriority::class)]
+    #[Groups(["task:read"])]
     private TaskPriority $priority = TaskPriority::MEDIUM;
 
     #[ORM\ManyToOne(targetEntity: TodoList::class, inversedBy: "tasks")]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["task:read"])]
     private ?TodoList $todoList = null;
 
     public function getId(): ?int

@@ -8,11 +8,7 @@ enum TaskPriority: string
     case MEDIUM = 'medium';
     case HIGH = 'high';
 
-    public const VALUES = [
-        self::LOW->value,
-        self::MEDIUM->value,
-        self::HIGH->value,
-    ];
+
 }
 
 

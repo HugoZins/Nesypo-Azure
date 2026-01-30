@@ -13,19 +13,21 @@ use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: "users")]
-#[ApiResource]
 #[ORM\HasLifecycleCallbacks]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use TimestampableTrait;
 
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
+    #[Groups(["user:read"])]
     private ?int $id = null;
 
     #[ORM\Column(type: "string", length: 180, unique: true)]
+    #[Groups(["user:read"])]
     private ?string $email = null;
 
     #[ORM\Column(type: "json")]
+    #[Groups(["user:read"])]
     private array $roles = [];
 
     #[ORM\Column(type: "string")]

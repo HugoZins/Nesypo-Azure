@@ -1,95 +1,95 @@
-"use client";
+"use client"
 
-import {useState} from "react";
-import {useForm, Controller} from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useState } from "react"
+import { Controller, useForm } from "react-hook-form"
+import type { z } from "zod"
+import { Button } from "@/components/ui/button"
 
-import {taskSchema} from "@/lib/validation/task";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {z} from "zod";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useCreateTask } from "@/hooks/tasks/useCreateTask"
+import { taskSchema } from "@/lib/validation/task"
 
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/components/ui/select";
+type FormValues = z.infer<typeof taskSchema>
 
-import {useCreateTask} from "@/hooks/tasks/useCreateTask";
+export function CreateTaskDialog({ todoListId }: { todoListId: number }) {
+	const [open, setOpen] = useState(false)
 
-type FormValues = z.infer<typeof taskSchema>;
+	const {
+		register,
+		handleSubmit,
+		reset,
+		control,
+		formState: { errors },
+	} = useForm<FormValues>({
+		resolver: zodResolver(taskSchema),
+		defaultValues: { priority: "medium", done: false, todoListId },
+	})
 
-export function CreateTaskDialog({todoListId}: { todoListId: number }) {
-    const [open, setOpen] = useState(false);
+	const { mutateAsync, isLoading } = useCreateTask(todoListId)
 
-    const {register, handleSubmit, reset, control, formState: {errors}} = useForm<FormValues>({
-        resolver: zodResolver(taskSchema),
-        defaultValues: {priority: "medium", done: false, todoListId},
-    });
+	const onSubmit = async (values: FormValues) => {
+		await mutateAsync({
+			title: values.title,
+			priority: values.priority,
+			todoListId,
+			done: false,
+		})
 
-    const {mutateAsync, isLoading} = useCreateTask(todoListId);
+		reset()
+		setOpen(false)
+	}
 
-    const onSubmit = async (values: FormValues) => {
-        await mutateAsync({
-            title: values.title,
-            priority: values.priority,
-            todoListId,
-            done: false,
-        });
+	return (
+		<Dialog open={open} onOpenChange={setOpen}>
+			<Button onClick={() => setOpen(true)}>Ajouter une tâche</Button>
 
-        reset();
-        setOpen(false);
-    };
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>Nouvelle tâche</DialogTitle>
+					<DialogDescription>Ajoute une tâche à cette TodoList</DialogDescription>
+				</DialogHeader>
 
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <Button onClick={() => setOpen(true)}>Ajouter une tâche</Button>
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+					{/* TITRE */}
+					<div>
+						<Label>Titre</Label>
+						<Input {...register("title")} placeholder="Ex : Acheter du lait" />
+						{errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
+					</div>
 
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Nouvelle tâche</DialogTitle>
-                    <DialogDescription>
-                        Ajoute une tâche à cette TodoList
-                    </DialogDescription>
-                </DialogHeader>
+					{/* PRIORITÉ */}
+					<div className="space-y-1">
+						<Label>Priorité</Label>
+						<Controller
+							name="priority"
+							control={control}
+							render={({ field }) => (
+								<>
+									<Select value={field.value} onValueChange={field.onChange}>
+										<SelectTrigger>
+											<SelectValue placeholder="Choisir une priorité" />
+										</SelectTrigger>
+										<SelectContent className="z-50 bg-background">
+											<SelectItem value="low">Basse</SelectItem>
+											<SelectItem value="medium">Moyenne</SelectItem>
+											<SelectItem value="high">Haute</SelectItem>
+										</SelectContent>
+									</Select>
+									{errors.priority && <p className="text-red-500 text-sm">{errors.priority.message}</p>}
+								</>
+							)}
+						/>
+					</div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    {/* TITRE */}
-                    <div>
-                        <Label>Titre</Label>
-                        <Input {...register("title")} placeholder="Ex : Acheter du lait"/>
-                        {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
-                    </div>
-
-                    {/* PRIORITÉ */}
-                    <div className="space-y-1">
-                        <Label>Priorité</Label>
-                        <Controller
-                            name="priority"
-                            control={control}
-                            render={({field}) => (
-                                <>
-                                    <Select value={field.value} onValueChange={field.onChange}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Choisir une priorité"/>
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="low">Basse</SelectItem>
-                                            <SelectItem value="medium">Moyenne</SelectItem>
-                                            <SelectItem value="high">Haute</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.priority && (
-                                        <p className="text-red-500 text-sm">{errors.priority.message}</p>
-                                    )}
-                                </>
-                            )}
-                        />
-                    </div>
-
-                    <Button type="submit" disabled={isLoading}>
-                        {isLoading ? "Création..." : "Créer"}
-                    </Button>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
+					<Button type="submit" disabled={isLoading}>
+						{isLoading ? "Création..." : "Créer"}
+					</Button>
+				</form>
+			</DialogContent>
+		</Dialog>
+	)
 }

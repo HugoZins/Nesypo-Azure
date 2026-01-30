@@ -1,88 +1,88 @@
 {
-  "root": true,
-  "$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
-  "files": {
-    "ignoreUnknown": true,
-    "includes": ["src/**", "next-env.d.ts"]
-  },
-  "assist": { "enabled": true, "actions": { "source": { "organizeImports": "on" } } },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "tab",
-    "indentWidth": 2,
-    "lineEnding": "lf",
-    "lineWidth": 120
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "complexity": {
-        "noUselessFragments": "warn",
-        "noUselessLoneBlockStatements": "warn",
-        "noUselessTernary": "warn",
-        "noUselessSwitchCase": "warn",
-        "useFlatMap": "warn",
-        "useOptionalChain": "warn"
-      },
-      "correctness": {
-        "noChildrenProp": "error",
-        "noUnusedImports": "error",
-        "noUnusedVariables": "error",
-        "noUnusedFunctionParameters": "error",
-        "useExhaustiveDependencies": "warn",
-        "useHookAtTopLevel": "error",
-        "useJsxKeyInIterable": "error",
-        "noConstAssign": "error",
-        "noUndeclaredVariables": "error",
-        "noUnreachable": "warn"
-      },
-      "nursery": {
-        "useSortedClasses": "warn"
-      },
-      "style": {
-        "useBlockStatements": "off",
-        "useConst": "warn",
-        "useDefaultSwitchClause": "error",
-        "noUselessElse": "warn",
-        "useArrayLiterals": "warn"
-      },
-      "suspicious": {
-        "noCommentText": "error",
-        "noConsole": {
-          "level": "error",
-          "options": {
-            "allow": ["error"]
-          }
-        },
-        "noDuplicateJsxProps": "error",
-        "noDuplicateClassMembers": "error",
-        "noDuplicateObjectKeys": "error",
-        "noDuplicateParameters": "error",
-        "noFunctionAssign": "error",
-        "noImportAssign": "error",
-        "noRedeclare": "error",
-        "noUnsafeNegation": "error",
-        "useGetterReturn": "error",
-        "noVar": "error",
-        "noDocumentCookie": "error"
-      }
-    }
-  },
-  "css": {
-    "parser": {
-      "tailwindDirectives": true
-    }
-  },
-  "javascript": {
-    "globals": ["$", "_", "externalVariable", "test", "expect"],
-    "formatter": {
-      "semicolons": "asNeeded"
-    }
-  }
+	"root": true,
+	"$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"ignoreUnknown": true,
+		"includes": ["src/**", "next-env.d.ts"]
+	},
+	"assist": { "enabled": true, "actions": { "source": { "organizeImports": "on" } } },
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineEnding": "lf",
+		"lineWidth": 120
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"complexity": {
+				"noUselessFragments": "warn",
+				"noUselessLoneBlockStatements": "warn",
+				"noUselessTernary": "warn",
+				"noUselessSwitchCase": "warn",
+				"useFlatMap": "warn",
+				"useOptionalChain": "warn"
+			},
+			"correctness": {
+				"noChildrenProp": "error",
+				"noUnusedImports": "error",
+				"noUnusedVariables": "error",
+				"noUnusedFunctionParameters": "error",
+				"useExhaustiveDependencies": "warn",
+				"useHookAtTopLevel": "error",
+				"useJsxKeyInIterable": "error",
+				"noConstAssign": "error",
+				"noUndeclaredVariables": "error",
+				"noUnreachable": "warn"
+			},
+			"nursery": {
+				"useSortedClasses": "warn"
+			},
+			"style": {
+				"useBlockStatements": "off",
+				"useConst": "warn",
+				"useDefaultSwitchClause": "error",
+				"noUselessElse": "warn",
+				"useArrayLiterals": "warn"
+			},
+			"suspicious": {
+				"noCommentText": "error",
+				"noConsole": {
+					"level": "error",
+					"options": {
+						"allow": ["error"]
+					}
+				},
+				"noDuplicateJsxProps": "error",
+				"noDuplicateClassMembers": "error",
+				"noDuplicateObjectKeys": "error",
+				"noDuplicateParameters": "error",
+				"noFunctionAssign": "error",
+				"noImportAssign": "error",
+				"noRedeclare": "error",
+				"noUnsafeNegation": "error",
+				"useGetterReturn": "error",
+				"noVar": "error",
+				"noDocumentCookie": "error"
+			}
+		}
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	},
+	"javascript": {
+		"globals": ["$", "_", "externalVariable", "test", "expect"],
+		"formatter": {
+			"semicolons": "asNeeded"
+		}
+	}
 }
