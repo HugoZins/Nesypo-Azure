@@ -8,8 +8,8 @@ enum TaskPriority: string
     case MEDIUM = 'medium';
     case HIGH = 'high';
 
-
+    public static function values(): array
+    {
+        return array_map(fn($c) => $c->value, self::cases());
+    }
 }
-
-
-

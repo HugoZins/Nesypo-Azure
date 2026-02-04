@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Repository\TodoListRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\TodoListProgressCalculator;
+use App\Service\AuthorizationService;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -100,8 +101,7 @@ class TodoListService
         return $todoList;
     }
 
-    public
-    function delete(User $user, int $id): array
+    public function delete(User $user, int $id): array
     {
         $todoList = $this->todoListRepository->find($id);
 

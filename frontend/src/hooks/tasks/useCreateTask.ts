@@ -1,20 +1,24 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { api } from "@/lib/api"
-import type { Task } from "@/types/todo"
+import {useMutation, useQueryClient} from "@tanstack/react-query"
+import {taskApi} from "@/lib/taskApi"
+import type {Task} from "@/types/todo"
 
 type CreateTaskPayload = {
-	title: string
-	todoListId: number
-	priority?: string
+    title: string
+    todoListId: number
+    priority?: string
 }
 
-export function useCreateTask(_todoListId: number) {
-	const queryClient = useQueryClient()
+export function useCreateTask(todoListId: number) {
+    const queryClient = useQueryClient()
 
-	return useMutation<Task, unknown, CreateTaskPayload>({
-		mutationFn: (payload) => api.post("api/tasks-custom", { json: payload }).json(),
-		onSuccess: () => {
-			queryClient.invalidateQueries(["todoLists"]) // invalide la liste complète
-		},
-	})
+    return useMutation({
+        mutationFn: taskApi.create,
+
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["tasks", todoListId],
+            })
+        },
+    })
 }
+

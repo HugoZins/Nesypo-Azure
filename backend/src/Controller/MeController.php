@@ -13,6 +13,7 @@ class MeController extends AbstractController
     #[Route('/api/me', methods: ['GET'])]
     #[OA\Get(
         summary: "Utilisateur connecté",
+        description: "Retourne les informations de l'utilisateur actuellement authentifié",
         security: [["cookieAuth" => []]],
         responses: [
             new OA\Response(
@@ -23,6 +24,11 @@ class MeController extends AbstractController
                         new OA\Property(property: "id", type: "integer"),
                         new OA\Property(property: "email", type: "string"),
                         new OA\Property(property: "roles", type: "array", items: new OA\Items(type: "string")),
+                    ],
+                    example: [
+                        "id" => 1,
+                        "email" => "john.doe@mail.com",
+                        "roles" => ["ROLE_USER"]
                     ]
                 )
             ),

@@ -23,22 +23,6 @@ class TaskService
     {
     }
 
-    public function getAll(User $user): array
-    {
-        if ($this->authorizationService->isAdmin($user)) {
-            return $this->em->getRepository(Task::class)->findAll();
-        }
-
-        $qb = $this->em->createQueryBuilder();
-        $qb->select('t')
-            ->from(Task::class, 't')
-            ->join('t.todoList', 'l')
-            ->where('l.owner = :user')
-            ->setParameter('user', $user);
-
-        return $qb->getQuery()->getResult();
-    }
-
     public function getByTodoList(User $user, int $todoListId): array
     {
         $todoList = $this->em->getRepository(TodoList::class)->find($todoListId);
@@ -79,7 +63,11 @@ class TaskService
         $task = new Task();
         $task->setTitle($request->title);
         $task->setDone($request->done ?? false);
-        $task->setPriority(TaskPriority::from($request->priority));
+        $task->setPriority(
+            $request->priority
+                ? TaskPriority::from($request->priority)
+                : TaskPriority::MEDIUM
+        );
         $task->setTodoList($todoList);
 
         $this->em->persist($task);

@@ -18,25 +18,51 @@ class AuthController extends AbstractController
 {
     public function __construct(
         private AuthService $authService
-    ) {}
+    )
+    {
+    }
 
     #[Route('/api/register', methods: ['POST'])]
     #[OA\Post(
         summary: "Inscription utilisateur",
+        description: "Crée un nouvel utilisateur avec une adresse email et un mot de passe",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
                 required: ["email", "password", "passwordConfirm"],
                 properties: [
-                    new OA\Property(property: "email", type: "string", example: "test@mail.com"),
-                    new OA\Property(property: "password", type: "string", example: "password"),
-                    new OA\Property(property: "passwordConfirm", type: "string", example: "password"),
+                    new OA\Property(
+                        property: "email",
+                        type: "string",
+                        format: "email",
+                        example: "john.doe@mail.com"
+                    ),
+                    new OA\Property(
+                        property: "password",
+                        type: "string",
+                        minLength: 8,
+                        example: "StrongPassword123"
+                    ),
+                    new OA\Property(
+                        property: "passwordConfirm",
+                        type: "string",
+                        example: "StrongPassword123"
+                    ),
                 ]
             )
         ),
         responses: [
-            new OA\Response(response: 200, description: "Utilisateur créé"),
-            new OA\Response(response: 400, description: "Erreur de validation"),
+            new OA\Response(
+                response: 200,
+                description: "Utilisateur créé",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 1),
+                        new OA\Property(property: "email", type: "string", example: "john.doe@mail.com")
+                    ]
+                )
+            ),
+            new OA\Response(response: 400, description: "Erreur de validation")
         ]
     )]
     public function register(Request $request): JsonResponse
@@ -63,19 +89,26 @@ class AuthController extends AbstractController
     #[Route('/api/login', methods: ['POST'])]
     #[OA\Post(
         summary: "Connexion utilisateur",
+        description: "Authentifie l'utilisateur et stocke le JWT dans un cookie HTTP-only",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
                 required: ["email", "password"],
                 properties: [
-                    new OA\Property(property: "email", type: "string"),
-                    new OA\Property(property: "password", type: "string"),
+                    new OA\Property(property: "email", type: "string", format: "email"),
+                    new OA\Property(property: "password", type: "string")
                 ]
             )
         ),
         responses: [
-            new OA\Response(response: 200, description: "Connecté"),
-            new OA\Response(response: 401, description: "Identifiants invalides"),
+            new OA\Response(
+                response: 200,
+                description: "Connexion réussie (cookie JWT défini)",
+                content: new OA\JsonContent(
+                    example: ["status" => "success"]
+                )
+            ),
+            new OA\Response(response: 401, description: "Identifiants invalides")
         ]
     )]
     public function login(Request $request): JsonResponse
@@ -105,7 +138,19 @@ class AuthController extends AbstractController
     }
 
     #[Route('/api/logout', methods: ['POST'])]
-    #[OA\Post(summary: "Déconnexion")]
+    #[OA\Post(
+        summary: "Déconnexion",
+        description: "Supprime le cookie d'authentification JWT",
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Déconnecté",
+                content: new OA\JsonContent(
+                    example: ["status" => "logged_out"]
+                )
+            )
+        ]
+    )]
     public function logout(): JsonResponse
     {
         $response = new JsonResponse(['status' => 'logged_out']);

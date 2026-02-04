@@ -2,24 +2,19 @@
 
 namespace App\DTO;
 
-use App\Enum\TaskPriority;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Enum\TaskPriority;
 
 class TaskRequest
 {
-    #[Assert\NotBlank(message: "Le titre est requis.")]
-    #[Assert\Length(
-        min: 3,
-        minMessage: "Le titre doit faire au moins {{ limit }} caractères."
-    )]
+    #[Assert\NotBlank]
     public ?string $title = null;
 
-    public ?bool $done = null;
-
+    #[Assert\Choice(callback: 'App\Enum\TaskPriority::values')]
+    public ?string $priority = null;
+    
     #[Assert\NotNull]
-    #[Assert\Choice(choices: TaskPriority::VALUES)]
-    public string $priority;
-
-    #[Assert\NotNull(message: "La TodoList est requise.")]
     public ?int $todoListId = null;
+
+    public ?bool $done = null;
 }
