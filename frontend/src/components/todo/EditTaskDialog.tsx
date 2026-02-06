@@ -26,7 +26,7 @@ export function EditTaskDialog({ task, todoListId }: { task: Task; todoListId: n
 		resolver: zodResolver(taskSchema),
 		defaultValues: {
 			title: task.title,
-			priority: task.priority ?? "medium",
+			priority: task.priority ?? "Moyenne",
 			done: task.done ?? false,
 			todoListId,
 		},
@@ -75,9 +75,9 @@ export function EditTaskDialog({ task, todoListId }: { task: Task; todoListId: n
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent className="z-50 bg-background">
-										<SelectItem value="low">Basse</SelectItem>
-										<SelectItem value="medium">Moyenne</SelectItem>
-										<SelectItem value="high">Haute</SelectItem>
+										<SelectItem value="Basse">Basse</SelectItem>
+										<SelectItem value="Moyenne">Moyenne</SelectItem>
+										<SelectItem value="Haute">Haute</SelectItem>
 									</SelectContent>
 								</Select>
 							)}

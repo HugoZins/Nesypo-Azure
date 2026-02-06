@@ -6,7 +6,7 @@ type UpdateTaskPayload = {
 	id: number
 	data: Partial<{
 		title: string
-		priority: "low" | "medium" | "high"
+		priority: "Basse" | "Moyenne" | "Haute"
 		done: boolean
 	}>
 }

@@ -26,7 +26,7 @@ export function CreateTaskDialog({ todoListId }: { todoListId: number }) {
 		formState: { errors },
 	} = useForm<FormValues>({
 		resolver: zodResolver(taskSchema),
-		defaultValues: { priority: "medium", done: false, todoListId },
+		defaultValues: { priority: "Moyenne", done: false, todoListId },
 	})
 
 	const { mutateAsync, isLoading } = useCreateTask(todoListId)
@@ -74,9 +74,9 @@ export function CreateTaskDialog({ todoListId }: { todoListId: number }) {
 											<SelectValue placeholder="Choisir une priorité" />
 										</SelectTrigger>
 										<SelectContent className="z-50 bg-background">
-											<SelectItem value="low">Basse</SelectItem>
-											<SelectItem value="medium">Moyenne</SelectItem>
-											<SelectItem value="high">Haute</SelectItem>
+											<SelectItem value="Basse">Basse</SelectItem>
+											<SelectItem value="Moyenne">Moyenne</SelectItem>
+											<SelectItem value="Haute">Haute</SelectItem>
 										</SelectContent>
 									</Select>
 									{errors.priority && <p className="text-red-500 text-sm">{errors.priority.message}</p>}

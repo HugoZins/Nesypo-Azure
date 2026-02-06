@@ -45,7 +45,7 @@ class TodoListController extends AbstractController
     public function list(): JsonResponse
     {
         $todoLists = $this->todoListService->getAll($this->getUser());
-        return $this->json($todoLists, 200, [], ['groups' => ['todo_list:read']]);
+        return $this->json($todoLists);
     }
 
     // Créer une todo list
@@ -124,7 +124,7 @@ class TodoListController extends AbstractController
                                 "id" => 10,
                                 "title" => "Préparer la réunion",
                                 "done" => false,
-                                "priority" => "high"
+                                "priority" => "Haute"
                             ]
                         ]
                     ]

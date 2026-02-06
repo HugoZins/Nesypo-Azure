@@ -4,7 +4,7 @@ import {api} from "./api"
 type CreateTaskPayload = {
     title: string
     todoListId: number
-    priority?: "low" | "medium" | "high"
+    priority?: "Basse" | "Moyenne" | "Haute"
 }
 
 export const taskApi = {

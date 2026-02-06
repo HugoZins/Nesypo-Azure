@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use App\DTO\TodoListRequest;
 use App\Entity\TodoList;
 use App\Entity\User;
 use App\Repository\TodoListRepository;
@@ -13,6 +12,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use App\DTO\TodoListResponse;
 
 class TodoListService
 {
@@ -28,17 +28,14 @@ class TodoListService
 
     public function getAll(User $user): array
     {
-        if ($this->authorizationService->isAdmin($user)) {
-            return $this->todoListRepository->findAll();
-        }
+        $todoLists = $this->authorizationService->isAdmin($user)
+            ? $this->todoListRepository->findAll()
+            : $this->todoListRepository->findBy(['owner' => $user]);
 
-        return $this->todoListRepository->findBy([
-            'owner' => $user
-        ]);
+        return array_map(fn(TodoList $todoList) => $this->toResponse($todoList), $todoLists);
     }
 
-
-    public function getOne(User $user, int $id): TodoList
+    public function getOne(User $user, int $id): TodoListResponse
     {
         $todoList = $this->todoListRepository->find($id);
 
@@ -50,8 +47,9 @@ class TodoListService
             throw new AccessDeniedHttpException('Not allowed');
         }
 
-        return $todoList;
+        return $this->toResponse($todoList);
     }
+
 
     public function create(User $user, TodoListRequest $request): TodoList
     {
@@ -71,7 +69,7 @@ class TodoListService
         $this->em->persist($todoList);
         $this->em->flush();
 
-        return $todoList;
+        return $this->toResponse($todoList);
     }
 
     public function update(User $user, int $id, TodoListRequest $request): TodoList
@@ -98,7 +96,7 @@ class TodoListService
         $todoList->setTitle($request->title);
         $this->em->flush();
 
-        return $todoList;
+        return $this->toResponse($todoList);
     }
 
     public function delete(User $user, int $id): array
@@ -117,5 +115,15 @@ class TodoListService
         $this->em->flush();
 
         return ['status' => 'success'];
+    }
+
+    private function toResponse(TodoList $todoList): TodoListResponse
+    {
+        return new TodoListResponse(
+            id: $todoList->getId(),
+            title: $todoList->getTitle(),
+            progress: $this->progressCalculator->calculate($todoList),
+            ownerEmail: $todoList->getOwner()?->getEmail()
+        );
     }
 }
