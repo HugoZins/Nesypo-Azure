@@ -1,3 +1,5 @@
+"use client"
+
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
@@ -7,8 +9,13 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input"
 import { useUpdateTodoList } from "@/hooks/todoLists/useUpdateTodoList"
 import { todoListSchema } from "@/lib/validation/todo"
+import type { TodoList } from "@/types/todo"
 
 type FormValues = z.infer<typeof todoListSchema>
+
+interface EditTodoListDialogProps {
+	todoList: TodoList
+}
 
 export function EditTodoListDialog({ todoList }: EditTodoListDialogProps) {
 	const [open, setOpen] = useState(false)
@@ -42,10 +49,12 @@ export function EditTodoListDialog({ todoList }: EditTodoListDialogProps) {
 
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<Input {...register("title")} />
-					{errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
+					{errors.title && (
+						<p className="text-destructive text-sm">{errors.title.message}</p>
+					)}
 
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setOpen(false)}>
+						<Button variant="outline" type="button" onClick={() => setOpen(false)}>
 							Annuler
 						</Button>
 						<Button type="submit">Enregistrer</Button>

@@ -1,7 +1,8 @@
-"use client"
-
+import type { Metadata } from "next"
 import { CreateTodoListDialog } from "@/components/todo/CreateTodoListDialog"
 import { TodoListTable } from "@/components/todo/TodoListTable"
+
+export const metadata: Metadata = { title: "Dashboard" }
 
 export default function DashboardPage() {
 	return (
@@ -10,7 +11,6 @@ export default function DashboardPage() {
 				<h2 className="font-bold text-xl">Vos Todolists</h2>
 				<CreateTodoListDialog />
 			</div>
-
 			<TodoListTable />
 		</div>
 	)

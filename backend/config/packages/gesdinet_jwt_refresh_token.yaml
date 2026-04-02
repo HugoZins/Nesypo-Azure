@@ -1,0 +1,10 @@
+gesdinet_jwt_refresh_token:
+    refresh_token_class: App\Entity\RefreshToken
+    ttl: 604800          # 7 jours en secondes
+    ttl_update: true     # renouvelle le TTL à chaque refresh
+    cookie:
+        enabled: true
+        same_site: lax
+        http_only: true
+        secure: false    # true en production HTTPS
+        path: /

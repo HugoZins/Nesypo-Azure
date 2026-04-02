@@ -1,20 +1,20 @@
-import type { TodoList } from "@/types/todo"
-import { api } from "./api"
+import { api } from "@/lib/api"
+import type { PaginatedResponse, TodoList } from "@/types/todo"
 
 export const todoListApi = {
-	getAll: () => api.get("api/todo-lists", { headers: { accept: "application/json" } }).json<TodoList[]>(),
+	getAll: (page = 1, limit = 10) =>
+		api.get("api/todo-lists", { searchParams: { page, limit } })
+			.json<PaginatedResponse<TodoList>>(),
 
-	create: (title: string) => api.post("api/todo-lists", { json: { title } }).json<TodoList>(),
+	getOne: (id: number) =>
+		api.get(`api/todo-lists/${id}`).json<TodoList>(),
 
-	getById(id: number) {
-		return api.get(`api/todo-lists/${id}`).json<TodoList>()
-	},
+	create: (title: string) =>
+		api.post("api/todo-lists", { json: { title } }).json<TodoList>(),
 
-	update(id: number, payload: Partial<TodoList>) {
-		return api.put(`api/todo-lists/${id}`, { json: payload }).json<TodoList>()
-	},
+	update: (id: number, title: string) =>
+		api.put(`api/todo-lists/${id}`, { json: { title } }).json<TodoList>(),
 
-	delete(id: number) {
-		return api.delete(`api/todo-lists/${id}`).json()
-	},
+	delete: (id: number) =>
+		api.delete(`api/todo-lists/${id}`).json<{ status: string }>(),
 }

@@ -11,33 +11,38 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
 import { useDeleteTodoList } from "@/hooks/todoLists/useDeleteTodoList"
 import type { TodoList } from "@/types/todo"
 
 interface DeleteTodoListAlertProps {
 	todoList: TodoList
+	onSuccess?: () => void
 }
 
-export function DeleteTodoListAlert({ todoList }: DeleteTodoListAlertProps) {
-	const deleteTodoList = useDeleteTodoList()
+export function DeleteTodoListAlert({ todoList, onSuccess }: DeleteTodoListAlertProps) {
+	const deleteTodoList = useDeleteTodoList(onSuccess)
 
 	return (
 		<AlertDialog>
 			<AlertDialogTrigger asChild>
-				<button type="button" className="rounded bg-red-600 px-3 py-1 text-sm text-white">Supprimer</button>
+				<Button variant="destructive" size="sm">Supprimer</Button>
 			</AlertDialogTrigger>
 
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>Supprimer la TodoList ?</AlertDialogTitle>
 					<AlertDialogDescription>
-						Cette action est irréversible. La TodoList <strong>{todoList.title}</strong> sera supprimée.
+						Cette action est irréversible. La TodoList <strong>{todoList.title}</strong> et toutes ses tâches seront supprimées.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 
 				<AlertDialogFooter>
 					<AlertDialogCancel>Annuler</AlertDialogCancel>
-					<AlertDialogAction onClick={() => deleteTodoList.mutate(todoList.id)} className="bg-red-600 text-white">
+					<AlertDialogAction
+						onClick={() => deleteTodoList.mutate(todoList.id)}
+						className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+					>
 						Supprimer
 					</AlertDialogAction>
 				</AlertDialogFooter>

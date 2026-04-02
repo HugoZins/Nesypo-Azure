@@ -5,7 +5,7 @@ import type { TodoList } from "@/types/todo"
 export function useTodoList(id?: number | string) {
 	return useQuery<TodoList>({
 		queryKey: ["todoList", id],
-		queryFn: () => todoListApi.getById(Number(id)),
+		queryFn: () => todoListApi.getOne(Number(id)),
 		enabled: !!id,
 		staleTime: 1000 * 60 * 2,
 	})

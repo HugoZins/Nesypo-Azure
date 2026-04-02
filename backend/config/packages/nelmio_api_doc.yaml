@@ -10,10 +10,44 @@ nelmio_api_doc:
                     type: apiKey
                     in: cookie
                     name: token
-            security:
-                -   cookieAuth: [ ]
+            schemas:
+                NotFoundResponse:
+                    type: object
+                    properties:
+                        type: { type: string, example: "https://tools.ietf.org/html/rfc2616#section-10" }
+                        title: { type: string, example: "An error occurred" }
+                        status: { type: integer, example: 404 }
+                        detail: { type: string, example: "Resource not found" }
+                UnauthorizedResponse:
+                    type: object
+                    properties:
+                        message: { type: string, example: "Invalid credentials" }
+                ForbiddenResponse:
+                    type: object
+                    properties:
+                        message: { type: string, example: "Access denied" }
+                BadRequestResponse:
+                    type: object
+                    properties:
+                        message: { type: string, example: "Validation error" }
+                ValidationErrorResponse:
+                    type: object
+                    properties:
+                        message: { type: string, example: "Le titre est requis. | Le titre doit faire au moins 3 caractères" }
 
+        tags:
+            - name: Authentication
+              description: "Inscription, connexion et déconnexion des utilisateurs"
+            - name: User
+              description: "Informations de l'utilisateur connecté"
+            - name: TodoLists
+              description: "Gestion des listes de tâches — création, consultation, modification et suppression"
+            - name: Tasks
+              description: "Gestion des tâches au sein d'une liste — création, modification du statut, priorité et suppression"
 
-    areas: # to filter documented areas
+        security:
+            - cookieAuth: []
+
+    areas:
         path_patterns:
-            - ^/api(?!/doc$) # Accepts routes under /api except /api/doc
+            - ^/api(?!/doc$)

@@ -1,10 +1,10 @@
-import type {Task} from "@/types/todo"
-import {api} from "./api"
+import type { Task, TaskPriority } from "@/types/todo"
+import { api } from "./api"
 
 type CreateTaskPayload = {
     title: string
     todoListId: number
-    priority?: "Basse" | "Moyenne" | "Haute"
+    priority?: TaskPriority
 }
 
 export const taskApi = {
@@ -13,11 +13,11 @@ export const taskApi = {
     },
 
     create(payload: CreateTaskPayload) {
-        return api.post("api/tasks", {json: payload}).json<Task>()
+        return api.post("api/tasks", { json: payload }).json<Task>()
     },
 
     update(id: number, payload: Partial<Task>) {
-        return api.patch(`api/tasks/${id}`, {json: payload}).json<Task>()
+        return api.patch(`api/tasks/${id}`, { json: payload }).json<Task>()
     },
 
     delete(id: number) {

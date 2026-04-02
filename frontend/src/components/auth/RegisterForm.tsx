@@ -4,30 +4,27 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
+import { toast } from "sonner"
 import type { z } from "zod"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { authApi } from "@/lib/authApi"
+import { useAuthStore } from "@/stores/useAuthStore"
 import { registerSchema } from "@/lib/validation/auth"
 
 type RegisterFormValues = z.infer<typeof registerSchema>
 
 export default function RegisterForm() {
 	const router = useRouter()
-
+	const { setAuthenticated } = useAuthStore()
 	const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
 	const form = useForm<RegisterFormValues>({
 		resolver: zodResolver(registerSchema),
-		defaultValues: {
-			email: "",
-			password: "",
-			passwordConfirm: "",
-		},
+		defaultValues: { email: "", password: "", passwordConfirm: "" },
 	})
 
 	const onSubmit = async (data: RegisterFormValues) => {
@@ -35,12 +32,20 @@ export default function RegisterForm() {
 
 		try {
 			await authApi.register(data.email, data.password, data.passwordConfirm)
-
 			await authApi.login(data.email, data.password)
-
+			setAuthenticated(true)
+			toast.success("Compte créé avec succès")
 			router.push("/dashboard")
-		} catch (e: Error) {
-			setErrorMessage(e?.response?.data?.message ?? e?.message ?? "Erreur lors de l’inscription")
+		} catch (e: unknown) {
+			const error = e as {
+				response?: { data?: { message?: string } }
+				message?: string
+			}
+			const message =
+				error?.response?.data?.message ??
+				error?.message ??
+				"Erreur lors de l'inscription"
+			setErrorMessage(message)
 		}
 	}
 
@@ -52,14 +57,13 @@ export default function RegisterForm() {
 
 			<CardContent>
 				{errorMessage && (
-					<Alert className="mb-4">
+					<Alert variant="destructive" className="mb-4">
 						<AlertTitle>Erreur</AlertTitle>
 						<AlertDescription>{errorMessage}</AlertDescription>
 					</Alert>
 				)}
 
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-					{/* EMAIL */}
 					<Controller
 						name="email"
 						control={form.control}
@@ -73,12 +77,13 @@ export default function RegisterForm() {
 									placeholder="ex: toto@mail.com"
 									aria-invalid={fieldState.invalid}
 								/>
-								{fieldState.error && <p className="text-destructive text-sm">{fieldState.error.message}</p>}
+								{fieldState.error && (
+									<p className="text-destructive text-sm">{fieldState.error.message}</p>
+								)}
 							</div>
 						)}
 					/>
 
-					{/* PASSWORD */}
 					<Controller
 						name="password"
 						control={form.control}
@@ -92,12 +97,13 @@ export default function RegisterForm() {
 									placeholder="••••••••"
 									aria-invalid={fieldState.invalid}
 								/>
-								{fieldState.error && <p className="text-destructive text-sm">{fieldState.error.message}</p>}
+								{fieldState.error && (
+									<p className="text-destructive text-sm">{fieldState.error.message}</p>
+								)}
 							</div>
 						)}
 					/>
 
-					{/* PASSWORD CONFIRM */}
 					<Controller
 						name="passwordConfirm"
 						control={form.control}
@@ -111,14 +117,27 @@ export default function RegisterForm() {
 									placeholder="••••••••"
 									aria-invalid={fieldState.invalid}
 								/>
-								{fieldState.error && <p className="text-destructive text-sm">{fieldState.error.message}</p>}
+								{fieldState.error && (
+									<p className="text-destructive text-sm">{fieldState.error.message}</p>
+								)}
 							</div>
 						)}
 					/>
 
-					<Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-						{form.formState.isSubmitting ? "Inscription..." : "S’inscrire"}
+					<Button
+						type="submit"
+						className="w-full"
+						disabled={form.formState.isSubmitting}
+					>
+						{form.formState.isSubmitting ? "Inscription..." : "S'inscrire"}
 					</Button>
+
+					<div className="text-center text-muted-foreground text-sm">
+						Déjà un compte ?{" "}
+						<a href="/login" className="font-medium text-primary hover:underline">
+							Se connecter
+						</a>
+					</div>
 				</form>
 			</CardContent>
 		</Card>

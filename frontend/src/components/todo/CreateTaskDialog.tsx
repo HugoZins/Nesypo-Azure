@@ -5,13 +5,12 @@ import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import type { z } from "zod"
 import { Button } from "@/components/ui/button"
-
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useCreateTask } from "@/hooks/tasks/useCreateTask"
-import { taskSchema } from "@/lib/validation/task"
+import { TASK_PRIORITIES, taskSchema } from "@/lib/validation/task"
 
 type FormValues = z.infer<typeof taskSchema>
 
@@ -26,19 +25,17 @@ export function CreateTaskDialog({ todoListId }: { todoListId: number }) {
 		formState: { errors },
 	} = useForm<FormValues>({
 		resolver: zodResolver(taskSchema),
-		defaultValues: { priority: "Moyenne", done: false, todoListId },
+		defaultValues: { priority: "Moyenne", todoListId },
 	})
 
-	const { mutateAsync, isLoading } = useCreateTask(todoListId)
+	const { mutateAsync, isPending } = useCreateTask(todoListId)
 
 	const onSubmit = async (values: FormValues) => {
 		await mutateAsync({
 			title: values.title,
 			priority: values.priority,
 			todoListId,
-			done: false,
 		})
-
 		reset()
 		setOpen(false)
 	}
@@ -52,16 +49,15 @@ export function CreateTaskDialog({ todoListId }: { todoListId: number }) {
 					<DialogTitle>Nouvelle tâche</DialogTitle>
 					<DialogDescription>Ajoute une tâche à cette TodoList</DialogDescription>
 				</DialogHeader>
-
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					{/* TITRE */}
 					<div>
 						<Label>Titre</Label>
 						<Input {...register("title")} placeholder="Ex : Acheter du lait" />
-						{errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
+						{errors.title && (
+							<p className="text-destructive text-sm">{errors.title.message}</p>
+						)}
 					</div>
 
-					{/* PRIORITÉ */}
 					<div className="space-y-1">
 						<Label>Priorité</Label>
 						<Controller
@@ -74,19 +70,21 @@ export function CreateTaskDialog({ todoListId }: { todoListId: number }) {
 											<SelectValue placeholder="Choisir une priorité" />
 										</SelectTrigger>
 										<SelectContent className="z-50 bg-background">
-											<SelectItem value="Basse">Basse</SelectItem>
-											<SelectItem value="Moyenne">Moyenne</SelectItem>
-											<SelectItem value="Haute">Haute</SelectItem>
+											{TASK_PRIORITIES.map((p) => (
+												<SelectItem key={p} value={p}>{p}</SelectItem>
+											))}
 										</SelectContent>
 									</Select>
-									{errors.priority && <p className="text-red-500 text-sm">{errors.priority.message}</p>}
+									{errors.priority && (
+										<p className="text-destructive text-sm">{errors.priority.message}</p>
+									)}
 								</>
 							)}
 						/>
 					</div>
 
-					<Button type="submit" disabled={isLoading}>
-						{isLoading ? "Création..." : "Créer"}
+					<Button type="submit" disabled={isPending}>
+						{isPending ? "Création..." : "Créer"}
 					</Button>
 				</form>
 			</DialogContent>

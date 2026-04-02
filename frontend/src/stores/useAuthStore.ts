@@ -7,9 +7,12 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-	isAuthenticated: true, // par défaut (token existant)
+	isAuthenticated: false,
 	setAuthenticated: (value) => set({ isAuthenticated: value }),
 	logout: () => {
 		set({ isAuthenticated: false })
+		if (typeof window !== "undefined") {
+			window.location.href = "/login"
+		}
 	},
 }))

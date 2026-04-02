@@ -8,9 +8,8 @@ class TodoListResponse
         public int     $id,
         public string  $title,
         public int     $progress,
+        public int     $completedTasks,
+        public int     $totalTasks,
         public ?string $ownerEmail = null,
-        public array   $tasks = [] // <-- inclure les tâches ici
-    )
-    {
-    }
+    ) {}
 }

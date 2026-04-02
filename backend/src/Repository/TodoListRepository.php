@@ -3,12 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\TodoList;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<TodoList>
- */
 class TodoListRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,14 +14,45 @@ class TodoListRepository extends ServiceEntityRepository
         parent::__construct($registry, TodoList::class);
     }
 
-    public function findByOwner(User $user): array
+    public function findPaginatedByUser(User $user, int $page, int $limit): array
     {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.owner = :user')
+        $offset = ($page - 1) * $limit;
+
+        $query = $this->createQueryBuilder('t')
+            ->where('t.owner = :user')
             ->setParameter('user', $user)
-            ->orderBy('t.id', 'DESC')
+            ->orderBy('t.id', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        $items = $query->getQuery()->getResult();
+
+        $total = $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->where('t.owner = :user')
+            ->setParameter('user', $user)
             ->getQuery()
-            ->getResult();
+            ->getSingleScalarResult();
+
+        return ['items' => $items, 'total' => (int) $total];
     }
 
+    public function findPaginatedAll(int $page, int $limit): array
+    {
+        $offset = ($page - 1) * $limit;
+
+        $items = $this->createQueryBuilder('t')
+            ->orderBy('t.id', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        $total = $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return ['items' => $items, 'total' => (int) $total];
+    }
 }

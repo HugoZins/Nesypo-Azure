@@ -1,38 +1,36 @@
 "use client"
 
-import { useParams } from "next/navigation"
-import { CreateTaskDialog } from "@/components/todo/CreateTaskDialog"
+import { useEffect } from "react"
+import { notFound, useParams } from "next/navigation"
 import { TodoListTasks } from "@/components/todo/TodoListTasks"
-import { Spinner } from "@/components/ui/spinner"
+import { TodoListTasksSkeleton } from "@/components/todo/TodoListTasksSkeleton"
 import { useTodoList } from "@/hooks/todoLists/useTodoList"
 
 export default function TodoListPage() {
 	const { id } = useParams()
 	const todoListId = Number(id)
 
-	const { data: todoList, isLoading, isError } = useTodoList(todoListId)
+	const { data: todoList, isLoading, isError } = useTodoList(
+		Number.isNaN(todoListId) ? undefined : todoListId
+	)
+
+	useEffect(() => {
+		if (todoList?.title) {
+			document.title = `${todoList.title} | Nesypo`
+		}
+	}, [todoList?.title])
 
 	if (isLoading) {
-		return (
-			<div className="flex h-64 items-center justify-center">
-				<Spinner />
-			</div>
-		)
+		return <TodoListTasksSkeleton />
 	}
 
 	if (isError || !todoList) {
-		return <div>Erreur lors du chargement de la TodoList</div>
+		notFound()
 	}
 
 	return (
 		<div className="space-y-6">
-			{/* HEADER PAGE */}
-			<div className="flex items-center justify-between">
-				<h2 className="font-bold text-xl">{todoList.title}</h2>
-				<CreateTaskDialog todoListId={todoList.id} />
-			</div>
-
-			{/* TASKS */}
+			<h2 className="font-bold text-xl">{todoList.title}</h2>
 			<TodoListTasks todoList={todoList} />
 		</div>
 	)

@@ -2,7 +2,8 @@
 
 namespace App\Service;
 
-use App\DTO\TaskRequest;
+use App\DTO\CreateTaskRequest;
+use App\DTO\UpdateTaskRequest;
 use App\Entity\Task;
 use App\Entity\TodoList;
 use App\Entity\User;
@@ -13,15 +14,13 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class TaskService
+readonly class TaskService
 {
     public function __construct(
         private EntityManagerInterface $em,
         private ValidatorInterface     $validator,
-        private AuthorizationService   $authorizationService
-    )
-    {
-    }
+        private AuthorizationService   $authorizationService,
+    ) {}
 
     public function getByTodoList(User $user, int $todoListId): array
     {
@@ -36,10 +35,10 @@ class TaskService
         }
 
         return $this->em->getRepository(Task::class)
-            ->findBy(['todoList' => $todoList]);
+            ->findBy(['todoList' => $todoList], ['id' => 'ASC']);
     }
 
-    public function create(User $user, TaskRequest $request): Task
+    public function create(User $user, CreateTaskRequest $request): Task
     {
         $errors = $this->validator->validate($request);
         if (count($errors) > 0) {
@@ -62,7 +61,7 @@ class TaskService
 
         $task = new Task();
         $task->setTitle($request->title);
-        $task->setDone($request->done ?? false);
+        $task->setDone(false);
         $task->setPriority(
             $request->priority
                 ? TaskPriority::from($request->priority)
@@ -76,7 +75,7 @@ class TaskService
         return $task;
     }
 
-    public function update(User $user, int $id, TaskRequest $request): Task
+    public function update(User $user, int $id, UpdateTaskRequest $request): Task
     {
         $task = $this->em->getRepository(Task::class)->find($id);
 
@@ -98,44 +97,6 @@ class TaskService
 
         if ($request->priority !== null) {
             $task->setPriority(TaskPriority::from($request->priority));
-        }
-
-        $errors = $this->validator->validate($task);
-        if (count($errors) > 0) {
-            $messages = [];
-            foreach ($errors as $error) {
-                $messages[] = $error->getMessage();
-            }
-            throw new BadRequestHttpException(implode(' | ', $messages));
-        }
-
-        $this->em->flush();
-
-        return $task;
-    }
-
-    public function patch(User $user, int $id, array $data): Task
-    {
-        $task = $this->em->getRepository(Task::class)->find($id);
-
-        if (!$task) {
-            throw new NotFoundHttpException('Task not found');
-        }
-
-        if (!$this->authorizationService->canManageTask($user, $task)) {
-            throw new AccessDeniedHttpException('Not allowed');
-        }
-
-        if (array_key_exists('done', $data)) {
-            $task->setDone((bool)$data['done']);
-        }
-
-        if (array_key_exists('title', $data)) {
-            $task->setTitle($data['title']);
-        }
-
-        if (array_key_exists('priority', $data)) {
-            $task->setPriority(TaskPriority::from($data['priority']));
         }
 
         $this->em->flush();

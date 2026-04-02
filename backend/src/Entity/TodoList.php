@@ -2,14 +2,12 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
 use App\Repository\TodoListRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Traits\TimestampableTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: TodoListRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -25,7 +23,7 @@ class TodoList
     #[Groups(["todo_list:read"])]
     private ?string $title = null;
 
-    #[ORM\OneToMany(mappedBy: "todoList", targetEntity: Task::class)]
+    #[ORM\OneToMany(mappedBy: "todoList", targetEntity: Task::class, cascade: ["remove"], orphanRemoval: true)]
     #[Groups(["todo_list:read"])]
     private Collection $tasks;
 

@@ -1,29 +1,29 @@
 "use client"
 
+import { useRouter } from "next/navigation"
+import { CreateTaskDialog } from "@/components/todo/CreateTaskDialog"
 import { DeleteTaskAlert } from "@/components/todo/DeleteTaskAlert"
+import { DeleteTodoListAlert } from "@/components/todo/DeleteTodoListAlert"
 import { EditTaskDialog } from "@/components/todo/EditTaskDialog"
 import { EditTodoListDialog } from "@/components/todo/EditTodoListDialog"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
-import { Spinner } from "@/components/ui/spinner"
+import { TodoListTasksSkeleton } from "@/components/todo/TodoListTasksSkeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { getProgressColor } from "@/lib/utils"
 import { useTasks } from "@/hooks/tasks/useTasks"
 import { useUpdateTask } from "@/hooks/tasks/useUpdateTask"
 import type { TodoList } from "@/types/todo"
 
 export function TodoListTasks({ todoList }: { todoList: TodoList }) {
+	const router = useRouter()
 	const { data: tasks = [], isLoading } = useTasks(todoList.id)
 	const updateTask = useUpdateTask(todoList.id)
 
 	if (isLoading) {
-		return (
-			<div className="flex h-64 items-center justify-center">
-				<Spinner />
-			</div>
-		)
+		return <TodoListTasksSkeleton />
 	}
 
 	const completed = tasks.filter((task) => task.done).length
@@ -37,11 +37,17 @@ export function TodoListTasks({ todoList }: { todoList: TodoList }) {
 				<CardHeader>
 					<CardTitle className="flex items-center justify-between">
 						<span>{todoList.title}</span>
-						<EditTodoListDialog todoList={todoList} />
+						<div className="flex items-center gap-2">
+							<EditTodoListDialog todoList={todoList} />
+							<DeleteTodoListAlert
+								todoList={todoList}
+								onSuccess={() => router.push("/dashboard")}
+							/>
+						</div>
 					</CardTitle>
 
 					<div className="mt-2">
-						<Progress value={progress} />
+						<Progress value={progress} indicatorClassName={getProgressColor(progress)} />
 						<div className="mt-1 text-muted-foreground text-sm">
 							{completed}/{total} tâches terminées
 						</div>
@@ -51,15 +57,18 @@ export function TodoListTasks({ todoList }: { todoList: TodoList }) {
 
 			<Separator />
 
-			{/* TASKS TABLE */}
+			{/* TASKS */}
 			<Card>
-				<CardHeader>
+				<CardHeader className="flex flex-row items-center justify-between">
 					<CardTitle>Tâches</CardTitle>
+					<CreateTaskDialog todoListId={todoList.id} />
 				</CardHeader>
 
 				<CardContent>
 					{tasks.length === 0 ? (
-						<div className="py-6 text-center text-muted-foreground text-sm">Aucune tâche pour cette todolist</div>
+						<div className="py-6 text-center text-muted-foreground text-sm">
+							Aucune tâche pour cette todolist
+						</div>
 					) : (
 						<Table>
 							<TableHeader>
@@ -74,18 +83,30 @@ export function TodoListTasks({ todoList }: { todoList: TodoList }) {
 							<TableBody>
 								{tasks.map((task) => (
 									<TableRow key={task.id}>
-										<TableCell className="flex items-center gap-2">
-											<Checkbox
-												checked={task.done}
-												onCheckedChange={(checked) =>
+										<TableCell>
+											<div
+												className="flex items-center gap-2 cursor-pointer select-none"
+												onClick={() =>
 													updateTask.mutate({
 														id: task.id,
-														data: { done: checked === true },
+														data: { done: !task.done },
 													})
 												}
-											/>
-
-											<span className={task.done ? "text-muted-foreground line-through" : ""}>{task.title}</span>
+											>
+												<Checkbox
+													checked={task.done}
+													onCheckedChange={(checked) =>
+														updateTask.mutate({
+															id: task.id,
+															data: { done: checked === true },
+														})
+													}
+													onClick={(e) => e.stopPropagation()}
+												/>
+												<span className={task.done ? "text-muted-foreground line-through" : ""}>
+                                                    {task.title}
+                                                </span>
+											</div>
 										</TableCell>
 
 										<TableCell>{task.done ? "✔️ Fait" : "⏳ À faire"}</TableCell>
@@ -93,8 +114,10 @@ export function TodoListTasks({ todoList }: { todoList: TodoList }) {
 										<TableCell>{task.priority ?? "—"}</TableCell>
 
 										<TableCell>
-											<EditTaskDialog task={task} todoListId={todoList.id} />
-											<DeleteTaskAlert task={task} todoListId={todoList.id} />
+											<div className="flex items-center gap-2">
+												<EditTaskDialog task={task} todoListId={todoList.id} />
+												<DeleteTaskAlert task={task} todoListId={todoList.id} />
+											</div>
 										</TableCell>
 									</TableRow>
 								))}

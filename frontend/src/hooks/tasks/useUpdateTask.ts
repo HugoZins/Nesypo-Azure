@@ -1,12 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { taskApi } from "@/lib/taskApi"
-import type { Task } from "@/types/todo"
+import type { Task, TaskPriority } from "@/types/todo"
 
 type UpdateTaskPayload = {
 	id: number
 	data: Partial<{
 		title: string
-		priority: "Basse" | "Moyenne" | "Haute"
+		priority: TaskPriority
 		done: boolean
 	}>
 }
@@ -22,16 +23,11 @@ export function useUpdateTask(todoListId: number) {
 		mutationFn: ({ id, data }) => taskApi.update(id, data),
 
 		onMutate: async ({ id, data }) => {
-			await queryClient.cancelQueries({
-				queryKey: ["tasks", todoListId],
-			})
-
+			await queryClient.cancelQueries({ queryKey: ["tasks", todoListId] })
 			const previousTasks = queryClient.getQueryData<Task[]>(["tasks", todoListId])
-
 			queryClient.setQueryData<Task[]>(["tasks", todoListId], (old) =>
-				old?.map((task) => (task.id === id ? { ...task, ...data } : task)),
+				old?.map((task) => (task.id === id ? { ...task, ...data } : task))
 			)
-
 			return { previousTasks }
 		},
 
@@ -39,10 +35,10 @@ export function useUpdateTask(todoListId: number) {
 			if (context?.previousTasks) {
 				queryClient.setQueryData(["tasks", todoListId], context.previousTasks)
 			}
+			toast.error("Impossible de mettre à jour la tâche")
 		},
 
 		onSettled: () => {
-			// important : invalidate tasks + todoLists
 			queryClient.invalidateQueries({ queryKey: ["tasks", todoListId] })
 			queryClient.invalidateQueries({ queryKey: ["todoLists"] })
 		},

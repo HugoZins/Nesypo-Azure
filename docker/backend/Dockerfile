@@ -11,18 +11,12 @@ RUN apt-get update && apt-get install -y \
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www/html
-
-# Copier le projet (utile pour build initial)
-COPY ./backend /var/www/html
-
-# Installer les dépendances au build
-RUN composer install --no-interaction --optimize-autoloader
-
 # Symfony CLI
 RUN curl -sS https://get.symfony.com/cli/installer | bash \
     && mv /root/.symfony*/bin/symfony /usr/local/bin/symfony
 
+WORKDIR /var/www/html
+
 EXPOSE 8000
 
-CMD ["symfony", "server:start", "--tls", "--port=8000", "--listen-ip=0.0.0.0"]
+CMD ["symfony", "server:start", "--no-tls", "--port=8000", "--listen-ip=0.0.0.0"]

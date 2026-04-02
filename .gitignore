@@ -20,6 +20,9 @@ yarn-error.log*
 .env.test
 
 # Symfony
+backend/.env
+backend/.env.local
+backend/config/jwt/
 /backend/var/
 /backend/vendor/
 /backend/config/jwt/*.pem
@@ -30,4 +33,3 @@ yarn-error.log*
 /frontend/build
 /frontend/node_modules/
 /frontend/.env*
-/frontend/.next/

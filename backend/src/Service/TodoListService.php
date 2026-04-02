@@ -6,15 +6,15 @@ use App\Entity\TodoList;
 use App\Entity\User;
 use App\Repository\TodoListRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Service\TodoListProgressCalculator;
-use App\Service\AuthorizationService;
+use App\DTO\TodoListRequest;
+use App\DTO\PaginatedResponse;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use App\DTO\TodoListResponse;
 
-class TodoListService
+readonly class TodoListService
 {
     public function __construct(
         private EntityManagerInterface     $em,
@@ -26,13 +26,25 @@ class TodoListService
     {
     }
 
-    public function getAll(User $user): array
+    public function getAll(User $user, int $page = 1, int $limit = 10): PaginatedResponse
     {
-        $todoLists = $this->authorizationService->isAdmin($user)
-            ? $this->todoListRepository->findAll()
-            : $this->todoListRepository->findBy(['owner' => $user]);
+        $isAdmin = $this->authorizationService->isAdmin($user);
 
-        return array_map(fn(TodoList $todoList) => $this->toResponse($todoList), $todoLists);
+        if ($isAdmin) {
+            ['items' => $items, 'total' => $total] = $this->todoListRepository->findPaginatedAll($page, $limit);
+        } else {
+            ['items' => $items, 'total' => $total] = $this->todoListRepository->findPaginatedByUser($user, $page, $limit);
+        }
+
+        $data = array_map(fn(TodoList $list) => $this->toResponse($list), $items);
+
+        return new PaginatedResponse(
+            data: $data,
+            total: $total,
+            page: $page,
+            limit: $limit,
+            pages: (int) ceil($total / $limit),
+        );
     }
 
     public function getOne(User $user, int $id): TodoListResponse
@@ -51,7 +63,7 @@ class TodoListService
     }
 
 
-    public function create(User $user, TodoListRequest $request): TodoList
+    public function create(User $user, TodoListRequest $request): TodoListResponse
     {
         $errors = $this->validator->validate($request);
         if (count($errors) > 0) {
@@ -72,7 +84,7 @@ class TodoListService
         return $this->toResponse($todoList);
     }
 
-    public function update(User $user, int $id, TodoListRequest $request): TodoList
+    public function update(User $user, int $id, TodoListRequest $request): TodoListResponse
     {
         $todoList = $this->todoListRepository->find($id);
 
@@ -119,10 +131,22 @@ class TodoListService
 
     private function toResponse(TodoList $todoList): TodoListResponse
     {
+        $tasks = $todoList->getTasks();
+        $total = count($tasks);
+        $completed = 0;
+
+        foreach ($tasks as $task) {
+            if ($task->isDone()) {
+                $completed++;
+            }
+        }
+
         return new TodoListResponse(
             id: $todoList->getId(),
             title: $todoList->getTitle(),
             progress: $this->progressCalculator->calculate($todoList),
+            completedTasks: $completed,
+            totalTasks: $total,
             ownerEmail: $todoList->getOwner()?->getEmail()
         );
     }

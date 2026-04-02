@@ -3,13 +3,14 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
+import type { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useUpdateTask } from "@/hooks/tasks/useUpdateTask"
-import { taskSchema } from "@/lib/validation/task"
+import { TASK_PRIORITIES, taskSchema } from "@/lib/validation/task"
 import type { Task } from "@/types/todo"
 
 type FormValues = z.infer<typeof taskSchema>
@@ -21,13 +22,12 @@ export function EditTaskDialog({ task, todoListId }: { task: Task; todoListId: n
 		register,
 		handleSubmit,
 		control,
-		formState: { errors },
+		formState: { errors, isSubmitting },
 	} = useForm<FormValues>({
 		resolver: zodResolver(taskSchema),
 		defaultValues: {
 			title: task.title,
 			priority: task.priority ?? "Moyenne",
-			done: task.done ?? false,
 			todoListId,
 		},
 	})
@@ -42,7 +42,6 @@ export function EditTaskDialog({ task, todoListId }: { task: Task; todoListId: n
 				priority: values.priority,
 			},
 		})
-
 		setOpen(false)
 	}
 
@@ -61,10 +60,12 @@ export function EditTaskDialog({ task, todoListId }: { task: Task; todoListId: n
 					<div>
 						<Label>Titre</Label>
 						<Input {...register("title")} />
-						{errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
+						{errors.title && (
+							<p className="text-destructive text-sm">{errors.title.message}</p>
+						)}
 					</div>
 
-					<div>
+					<div className="space-y-1">
 						<Label>Priorité</Label>
 						<Controller
 							name="priority"
@@ -75,16 +76,18 @@ export function EditTaskDialog({ task, todoListId }: { task: Task; todoListId: n
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent className="z-50 bg-background">
-										<SelectItem value="Basse">Basse</SelectItem>
-										<SelectItem value="Moyenne">Moyenne</SelectItem>
-										<SelectItem value="Haute">Haute</SelectItem>
+										{TASK_PRIORITIES.map((p) => (
+											<SelectItem key={p} value={p}>{p}</SelectItem>
+										))}
 									</SelectContent>
 								</Select>
 							)}
 						/>
 					</div>
 
-					<Button type="submit">Enregistrer</Button>
+					<Button type="submit" disabled={isSubmitting}>
+						{isSubmitting ? "Enregistrement..." : "Enregistrer"}
+					</Button>
 				</form>
 			</DialogContent>
 		</Dialog>

@@ -5,6 +5,7 @@ import Link from "next/link"
 import {DeleteTodoListAlert} from "@/components/todo/DeleteTodoListAlert"
 import {Button} from "@/components/ui/button"
 import {Progress} from "@/components/ui/progress"
+import { getProgressColor } from "@/lib/utils"
 import type {TodoList} from "@/types/todo"
 
 export function getColumns(showOwner: boolean): ColumnDef<TodoList>[] {
@@ -32,14 +33,30 @@ export function getColumns(showOwner: boolean): ColumnDef<TodoList>[] {
         {
             id: "progress",
             header: "Progression",
-            cell: ({row}) => {
+            cell: ({ row }) => {
                 const progress = row.original.progress ?? 0
-
                 return (
                     <div className="flex items-center gap-2">
-                        <Progress value={progress} className="w-32"/>
+                        <Progress
+                            value={progress}
+                            className="w-32"
+                            indicatorClassName={getProgressColor(progress)}
+                        />
                         <span className="text-muted-foreground text-sm">{progress}%</span>
                     </div>
+                )
+            },
+        },
+        {
+            id: "tasks",
+            header: "Tâches terminées",
+            cell: ({ row }) => {
+                const completed = row.original.completedTasks ?? 0
+                const total = row.original.totalTasks ?? 0
+                return (
+                    <span className="text-sm text-muted-foreground">
+                {completed}/{total}
+            </span>
                 )
             },
         },
