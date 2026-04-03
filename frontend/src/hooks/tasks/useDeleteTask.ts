@@ -18,9 +18,7 @@ export function useDeleteTask(todoListId: number) {
 		onMutate: async (taskId) => {
 			await queryClient.cancelQueries({ queryKey: ["tasks", todoListId] })
 			const previousTasks = queryClient.getQueryData<Task[]>(["tasks", todoListId])
-			queryClient.setQueryData<Task[]>(["tasks", todoListId], (old) =>
-				old?.filter((task) => task.id !== taskId)
-			)
+			queryClient.setQueryData<Task[]>(["tasks", todoListId], (old) => old?.filter((task) => task.id !== taskId))
 			return { previousTasks }
 		},
 

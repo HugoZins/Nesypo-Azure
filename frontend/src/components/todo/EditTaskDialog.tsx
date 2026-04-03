@@ -60,9 +60,7 @@ export function EditTaskDialog({ task, todoListId }: { task: Task; todoListId: n
 					<div>
 						<Label>Titre</Label>
 						<Input {...register("title")} />
-						{errors.title && (
-							<p className="text-destructive text-sm">{errors.title.message}</p>
-						)}
+						{errors.title && <p className="text-destructive text-sm">{errors.title.message}</p>}
 					</div>
 
 					<div className="space-y-1">
@@ -77,7 +75,9 @@ export function EditTaskDialog({ task, todoListId }: { task: Task; todoListId: n
 									</SelectTrigger>
 									<SelectContent className="z-50 bg-background">
 										{TASK_PRIORITIES.map((p) => (
-											<SelectItem key={p} value={p}>{p}</SelectItem>
+											<SelectItem key={p} value={p}>
+												{p}
+											</SelectItem>
 										))}
 									</SelectContent>
 								</Select>

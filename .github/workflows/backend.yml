@@ -1,0 +1,80 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+
+jobs:
+  tests:
+    name: PHPUnit Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: todo_test
+          POSTGRES_USER: todo
+          POSTGRES_PASSWORD: todo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo, pdo_pgsql, intl
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Generate JWT keypair
+        working-directory: backend
+        run: php bin/console lexik:jwt:generate-keypair --skip-if-exists
+        env:
+          APP_ENV: test
+          JWT_PASSPHRASE: ${{ secrets.JWT_PASSPHRASE || 'test_passphrase' }}
+
+      - name: Create test database schema
+        working-directory: backend
+        run: |
+          php bin/console doctrine:database:create --env=test --if-not-exists
+          php bin/console doctrine:schema:create --env=test
+        env:
+          DATABASE_URL: postgresql://todo:todo@127.0.0.1:5432/todo_test?serverVersion=15
+
+      - name: Run PHPUnit tests
+        working-directory: backend
+        run: php bin/phpunit --testdox
+        env:
+          APP_ENV: test
+          DATABASE_URL: postgresql://todo:todo@127.0.0.1:5432/todo_test?serverVersion=15
+          JWT_PASSPHRASE: ${{ secrets.JWT_PASSPHRASE || 'test_passphrase' }}
+          CORS_ALLOW_ORIGIN: http://localhost:3000
+          DEFAULT_URI: http://localhost:8000

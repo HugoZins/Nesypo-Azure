@@ -26,7 +26,9 @@ export function DeleteTaskAlert({ task, todoListId }: DeleteTaskAlertProps) {
 	return (
 		<AlertDialog>
 			<AlertDialogTrigger asChild>
-				<button type="button" className="rounded bg-red-600 px-3 py-1 text-sm text-white">Supprimer</button>
+				<button type="button" className="rounded bg-red-600 px-3 py-1 text-sm text-white">
+					Supprimer
+				</button>
 			</AlertDialogTrigger>
 
 			<AlertDialogContent>

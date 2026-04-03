@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect } from "react"
 import { notFound, useParams } from "next/navigation"
+import { useEffect } from "react"
 import { TodoListTasks } from "@/components/todo/TodoListTasks"
 import { TodoListTasksSkeleton } from "@/components/todo/TodoListTasksSkeleton"
 import { useTodoList } from "@/hooks/todoLists/useTodoList"
@@ -10,9 +10,7 @@ export default function TodoListPage() {
 	const { id } = useParams()
 	const todoListId = Number(id)
 
-	const { data: todoList, isLoading, isError } = useTodoList(
-		Number.isNaN(todoListId) ? undefined : todoListId
-	)
+	const { data: todoList, isLoading, isError } = useTodoList(Number.isNaN(todoListId) ? undefined : todoListId)
 
 	useEffect(() => {
 		if (todoList?.title) {

@@ -49,9 +49,7 @@ export function EditTodoListDialog({ todoList }: EditTodoListDialogProps) {
 
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<Input {...register("title")} />
-					{errors.title && (
-						<p className="text-destructive text-sm">{errors.title.message}</p>
-					)}
+					{errors.title && <p className="text-destructive text-sm">{errors.title.message}</p>}
 
 					<DialogFooter>
 						<Button variant="outline" type="button" onClick={() => setOpen(false)}>

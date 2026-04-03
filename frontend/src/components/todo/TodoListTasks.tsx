@@ -6,15 +6,15 @@ import { DeleteTaskAlert } from "@/components/todo/DeleteTaskAlert"
 import { DeleteTodoListAlert } from "@/components/todo/DeleteTodoListAlert"
 import { EditTaskDialog } from "@/components/todo/EditTaskDialog"
 import { EditTodoListDialog } from "@/components/todo/EditTodoListDialog"
+import { TodoListTasksSkeleton } from "@/components/todo/TodoListTasksSkeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
-import { TodoListTasksSkeleton } from "@/components/todo/TodoListTasksSkeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { getProgressColor } from "@/lib/utils"
 import { useTasks } from "@/hooks/tasks/useTasks"
 import { useUpdateTask } from "@/hooks/tasks/useUpdateTask"
+import { getProgressColor } from "@/lib/utils"
 import type { TodoList } from "@/types/todo"
 
 export function TodoListTasks({ todoList }: { todoList: TodoList }) {
@@ -39,10 +39,7 @@ export function TodoListTasks({ todoList }: { todoList: TodoList }) {
 						<span>{todoList.title}</span>
 						<div className="flex items-center gap-2">
 							<EditTodoListDialog todoList={todoList} />
-							<DeleteTodoListAlert
-								todoList={todoList}
-								onSuccess={() => router.push("/dashboard")}
-							/>
+							<DeleteTodoListAlert todoList={todoList} onSuccess={() => router.push("/dashboard")} />
 						</div>
 					</CardTitle>
 
@@ -66,9 +63,7 @@ export function TodoListTasks({ todoList }: { todoList: TodoList }) {
 
 				<CardContent>
 					{tasks.length === 0 ? (
-						<div className="py-6 text-center text-muted-foreground text-sm">
-							Aucune tâche pour cette todolist
-						</div>
+						<div className="py-6 text-center text-muted-foreground text-sm">Aucune tâche pour cette todolist</div>
 					) : (
 						<Table>
 							<TableHeader>
@@ -103,9 +98,7 @@ export function TodoListTasks({ todoList }: { todoList: TodoList }) {
 													}
 													onClick={(e) => e.stopPropagation()}
 												/>
-												<span className={task.done ? "text-muted-foreground line-through" : ""}>
-                                                    {task.title}
-                                                </span>
+												<span className={task.done ? "text-muted-foreground line-through" : ""}>{task.title}</span>
 											</div>
 										</TableCell>
 

@@ -53,9 +53,7 @@ export function CreateTaskDialog({ todoListId }: { todoListId: number }) {
 					<div>
 						<Label>Titre</Label>
 						<Input {...register("title")} placeholder="Ex : Acheter du lait" />
-						{errors.title && (
-							<p className="text-destructive text-sm">{errors.title.message}</p>
-						)}
+						{errors.title && <p className="text-destructive text-sm">{errors.title.message}</p>}
 					</div>
 
 					<div className="space-y-1">
@@ -71,13 +69,13 @@ export function CreateTaskDialog({ todoListId }: { todoListId: number }) {
 										</SelectTrigger>
 										<SelectContent className="z-50 bg-background">
 											{TASK_PRIORITIES.map((p) => (
-												<SelectItem key={p} value={p}>{p}</SelectItem>
+												<SelectItem key={p} value={p}>
+													{p}
+												</SelectItem>
 											))}
 										</SelectContent>
 									</Select>
-									{errors.priority && (
-										<p className="text-destructive text-sm">{errors.priority.message}</p>
-									)}
+									{errors.priority && <p className="text-destructive text-sm">{errors.priority.message}</p>}
 								</>
 							)}
 						/>

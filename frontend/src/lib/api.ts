@@ -21,10 +21,9 @@ export const api = ky.create({
 				isRefreshing = true
 
 				try {
-					await ky.post(
-						`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/token/refresh`,
-						{ credentials: "include" }
-					)
+					await ky.post(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/token/refresh`, {
+						credentials: "include",
+					})
 
 					// Relancer la requête originale
 					isRefreshing = false

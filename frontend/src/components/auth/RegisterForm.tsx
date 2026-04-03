@@ -12,8 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { authApi } from "@/lib/authApi"
-import { useAuthStore } from "@/stores/useAuthStore"
 import { registerSchema } from "@/lib/validation/auth"
+import { useAuthStore } from "@/stores/useAuthStore"
 
 type RegisterFormValues = z.infer<typeof registerSchema>
 
@@ -41,10 +41,7 @@ export default function RegisterForm() {
 				response?: { data?: { message?: string } }
 				message?: string
 			}
-			const message =
-				error?.response?.data?.message ??
-				error?.message ??
-				"Erreur lors de l'inscription"
+			const message = error?.response?.data?.message ?? error?.message ?? "Erreur lors de l'inscription"
 			setErrorMessage(message)
 		}
 	}
@@ -77,9 +74,7 @@ export default function RegisterForm() {
 									placeholder="ex: toto@mail.com"
 									aria-invalid={fieldState.invalid}
 								/>
-								{fieldState.error && (
-									<p className="text-destructive text-sm">{fieldState.error.message}</p>
-								)}
+								{fieldState.error && <p className="text-destructive text-sm">{fieldState.error.message}</p>}
 							</div>
 						)}
 					/>
@@ -97,9 +92,7 @@ export default function RegisterForm() {
 									placeholder="••••••••"
 									aria-invalid={fieldState.invalid}
 								/>
-								{fieldState.error && (
-									<p className="text-destructive text-sm">{fieldState.error.message}</p>
-								)}
+								{fieldState.error && <p className="text-destructive text-sm">{fieldState.error.message}</p>}
 							</div>
 						)}
 					/>
@@ -117,18 +110,12 @@ export default function RegisterForm() {
 									placeholder="••••••••"
 									aria-invalid={fieldState.invalid}
 								/>
-								{fieldState.error && (
-									<p className="text-destructive text-sm">{fieldState.error.message}</p>
-								)}
+								{fieldState.error && <p className="text-destructive text-sm">{fieldState.error.message}</p>}
 							</div>
 						)}
 					/>
 
-					<Button
-						type="submit"
-						className="w-full"
-						disabled={form.formState.isSubmitting}
-					>
+					<Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
 						{form.formState.isSubmitting ? "Inscription..." : "S'inscrire"}
 					</Button>
 

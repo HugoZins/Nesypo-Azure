@@ -26,14 +26,17 @@ export function DeleteTodoListAlert({ todoList, onSuccess }: DeleteTodoListAlert
 	return (
 		<AlertDialog>
 			<AlertDialogTrigger asChild>
-				<Button variant="destructive" size="sm">Supprimer</Button>
+				<Button variant="destructive" size="sm">
+					Supprimer
+				</Button>
 			</AlertDialogTrigger>
 
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>Supprimer la TodoList ?</AlertDialogTitle>
 					<AlertDialogDescription>
-						Cette action est irréversible. La TodoList <strong>{todoList.title}</strong> et toutes ses tâches seront supprimées.
+						Cette action est irréversible. La TodoList <strong>{todoList.title}</strong> et toutes ses tâches seront
+						supprimées.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 

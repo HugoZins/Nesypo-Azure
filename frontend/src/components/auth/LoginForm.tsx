@@ -9,15 +9,17 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { api } from "@/lib/api"
 import { authApi } from "@/lib/authApi"
-import { useAuthStore } from "@/stores/useAuthStore"
 import { loginSchema } from "@/lib/validation/auth"
+import { useAuthStore } from "@/stores/useAuthStore"
+import type { Me } from "@/types/todo"
 
 type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function LoginForm() {
 	const router = useRouter()
-	const { setAuthenticated } = useAuthStore()
+	const setAuth = useAuthStore((s) => s.setAuth)
 
 	const form = useForm<LoginFormValues>({
 		resolver: zodResolver(loginSchema),
@@ -27,7 +29,8 @@ export default function LoginForm() {
 	const onSubmit = async (data: LoginFormValues) => {
 		try {
 			await authApi.login(data.email, data.password)
-			setAuthenticated(true)
+			const me = await api.get("api/me").json<Me>()
+			setAuth(me)
 			router.push("/dashboard")
 		} catch {
 			toast.error("Identifiants invalides")

@@ -15,14 +15,16 @@ import { TASK_PRIORITIES } from "@/lib/validation/task"
 import { todoListSchema } from "@/lib/validation/todo"
 
 const createTodoListWithTasksSchema = todoListSchema.extend({
-	tasks: z.array(
-		z.object({
-			title: z.string().min(3, "Le titre doit contenir au moins 3 caractères"),
-			priority: z.enum(TASK_PRIORITIES, {
-				error: () => ({ message: "Veuillez sélectionner une priorité" }),
+	tasks: z
+		.array(
+			z.object({
+				title: z.string().min(3, "Le titre doit contenir au moins 3 caractères"),
+				priority: z.enum(TASK_PRIORITIES, {
+					error: () => ({ message: "Veuillez sélectionner une priorité" }),
+				}),
 			}),
-		})
-	).optional(),
+		)
+		.optional(),
 })
 
 type FormValues = z.infer<typeof createTodoListWithTasksSchema>
@@ -73,8 +75,8 @@ export function CreateTodoListDialog() {
 						title: task.title,
 						priority: task.priority,
 						todoListId: todoList.id,
-					})
-				)
+					}),
+				),
 			)
 		}
 
@@ -94,27 +96,21 @@ export function CreateTodoListDialog() {
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>Créer une TodoList</DialogTitle>
-					<DialogDescription>
-						Donne un nom à ta liste et ajoute des tâches optionnellement.
-					</DialogDescription>
+					<DialogDescription>Donne un nom à ta liste et ajoute des tâches optionnellement.</DialogDescription>
 				</DialogHeader>
 
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 					<div className="space-y-1">
 						<Label>Nom de la liste</Label>
 						<Input {...register("title")} placeholder="Ex : Courses" />
-						{errors.title && (
-							<p className="text-destructive text-sm">{errors.title.message}</p>
-						)}
+						{errors.title && <p className="text-destructive text-sm">{errors.title.message}</p>}
 					</div>
 
 					<div className="space-y-3">
 						<Label>Tâches</Label>
 
 						{fields.length === 0 && (
-							<p className="text-sm text-muted-foreground">
-								Aucune tâche — ajoutez en ici ou par la suite.
-							</p>
+							<p className="text-sm text-muted-foreground">Aucune tâche — ajoutez en ici ou par la suite.</p>
 						)}
 
 						{fields.map((field, index) => {
@@ -126,9 +122,7 @@ export function CreateTodoListDialog() {
 									className="rounded-lg border border-border p-3 space-y-3"
 								>
 									<div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">
-                                            Tâche {index + 1}
-                                        </span>
+										<span className="text-sm font-medium text-muted-foreground">Tâche {index + 1}</span>
 										<Button
 											type="button"
 											variant="ghost"
@@ -142,14 +136,9 @@ export function CreateTodoListDialog() {
 
 									<div className="space-y-1">
 										<Label>Titre</Label>
-										<Input
-											{...register(`tasks.${index}.title`)}
-											placeholder="Ex : Acheter du lait"
-										/>
+										<Input {...register(`tasks.${index}.title`)} placeholder="Ex : Acheter du lait" />
 										{errors.tasks?.[index]?.title && (
-											<p className="text-destructive text-sm">
-												{errors.tasks[index].title.message}
-											</p>
+											<p className="text-destructive text-sm">{errors.tasks[index].title.message}</p>
 										)}
 									</div>
 
@@ -165,29 +154,23 @@ export function CreateTodoListDialog() {
 													</SelectTrigger>
 													<SelectContent className="z-50 bg-background">
 														{TASK_PRIORITIES.map((p) => (
-															<SelectItem key={p} value={p}>{p}</SelectItem>
+															<SelectItem key={p} value={p}>
+																{p}
+															</SelectItem>
 														))}
 													</SelectContent>
 												</Select>
 											)}
 										/>
 										{errors.tasks?.[index]?.priority && (
-											<p className="text-destructive text-sm">
-												{errors.tasks[index].priority.message}
-											</p>
+											<p className="text-destructive text-sm">{errors.tasks[index].priority.message}</p>
 										)}
 									</div>
 								</div>
 							)
 						})}
 
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							className="w-full"
-							onClick={handleAddTask}
-						>
+						<Button type="button" variant="outline" size="sm" className="w-full" onClick={handleAddTask}>
 							+ Ajouter une tâche
 						</Button>
 					</div>

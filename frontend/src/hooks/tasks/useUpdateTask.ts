@@ -26,7 +26,7 @@ export function useUpdateTask(todoListId: number) {
 			await queryClient.cancelQueries({ queryKey: ["tasks", todoListId] })
 			const previousTasks = queryClient.getQueryData<Task[]>(["tasks", todoListId])
 			queryClient.setQueryData<Task[]>(["tasks", todoListId], (old) =>
-				old?.map((task) => (task.id === id ? { ...task, ...data } : task))
+				old?.map((task) => (task.id === id ? { ...task, ...data } : task)),
 			)
 			return { previousTasks }
 		},
