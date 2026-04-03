@@ -75,7 +75,7 @@ export function TodoListTable() {
 				</CardContent>
 
 				<CardFooter className="flex items-center justify-between py-4">
-					<span className="text-sm text-muted-foreground">
+					<span className="text-muted-foreground text-sm">
 						{total} liste{total > 1 ? "s" : ""} au total
 					</span>
 
@@ -88,7 +88,7 @@ export function TodoListTable() {
 						>
 							Précédent
 						</Button>
-						<span className="text-sm text-muted-foreground">
+						<span className="text-muted-foreground text-sm">
 							Page {page} / {totalPages}
 						</span>
 						<Button

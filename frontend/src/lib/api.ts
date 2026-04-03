@@ -1,4 +1,4 @@
-import ky, { HTTPError } from "ky"
+import ky from "ky"
 import { useAuthStore } from "@/stores/useAuthStore"
 
 let isRefreshing = false
@@ -8,7 +8,7 @@ export const api = ky.create({
 	credentials: "include",
 	hooks: {
 		afterResponse: [
-			async (request, options, response) => {
+			async (request, _options, response) => {
 				if (response.status !== 401) return response
 
 				// Éviter les boucles infinies sur la route de refresh elle-même

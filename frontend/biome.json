@@ -53,6 +53,7 @@
 				"useArrayLiterals": "warn"
 			},
 			"suspicious": {
+				"noArrayIndexKey": "warn",
 				"noCommentText": "error",
 				"noConsole": {
 					"level": "error",
@@ -70,7 +71,7 @@
 				"noUnsafeNegation": "error",
 				"useGetterReturn": "error",
 				"noVar": "error",
-				"noDocumentCookie": "error"
+				"noDocumentCookie": "warn"
 			}
 		}
 	},

@@ -79,8 +79,9 @@ export function TodoListTasks({ todoList }: { todoList: TodoList }) {
 								{tasks.map((task) => (
 									<TableRow key={task.id}>
 										<TableCell>
-											<div
-												className="flex items-center gap-2 cursor-pointer select-none"
+											<button
+												type="button"
+												className="flex w-full cursor-pointer select-none items-center gap-2 border-0 bg-transparent p-0 text-left"
 												onClick={() =>
 													updateTask.mutate({
 														id: task.id,
@@ -99,7 +100,7 @@ export function TodoListTasks({ todoList }: { todoList: TodoList }) {
 													onClick={(e) => e.stopPropagation()}
 												/>
 												<span className={task.done ? "text-muted-foreground line-through" : ""}>{task.title}</span>
-											</div>
+											</button>
 										</TableCell>
 
 										<TableCell>{task.done ? "✔️ Fait" : "⏳ À faire"}</TableCell>

@@ -6,8 +6,11 @@ export function TodoListTableSkeleton() {
 		<div className="mx-auto max-w-7xl px-6">
 			<Card>
 				<CardContent className="p-4">
-					{Array.from({ length: 6 }).map((_, i) => (
-						<div key={i} className="flex items-center gap-4 py-3 border-b border-border last:border-0">
+					{Array.from({ length: 6 }, (_, i) => (
+						<div
+							key={`skeleton-row-${i}`}
+							className="flex items-center gap-4 border-border border-b py-3 last:border-0"
+						>
 							<Skeleton className="h-4 flex-1" />
 							<Skeleton className="h-4 w-24" />
 							<Skeleton className="h-4 w-20" />

@@ -58,7 +58,7 @@ export function CreateTodoListDialog() {
 			lastTaskRef.current.scrollIntoView({ behavior: "smooth", block: "start" })
 			setShouldScroll(false)
 		}
-	}, [fields.length, shouldScroll])
+	}, [shouldScroll])
 
 	const handleAddTask = () => {
 		append({ title: "", priority: "Moyenne" })
@@ -110,7 +110,7 @@ export function CreateTodoListDialog() {
 						<Label>Tâches</Label>
 
 						{fields.length === 0 && (
-							<p className="text-sm text-muted-foreground">Aucune tâche — ajoutez en ici ou par la suite.</p>
+							<p className="text-muted-foreground text-sm">Aucune tâche — ajoutez en ici ou par la suite.</p>
 						)}
 
 						{fields.map((field, index) => {
@@ -119,10 +119,10 @@ export function CreateTodoListDialog() {
 								<div
 									key={field.id}
 									ref={isLast ? lastTaskRef : null}
-									className="rounded-lg border border-border p-3 space-y-3"
+									className="space-y-3 rounded-lg border border-border p-3"
 								>
 									<div className="flex items-center justify-between">
-										<span className="text-sm font-medium text-muted-foreground">Tâche {index + 1}</span>
+										<span className="font-medium text-muted-foreground text-sm">Tâche {index + 1}</span>
 										<Button
 											type="button"
 											variant="ghost"

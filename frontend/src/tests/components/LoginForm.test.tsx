@@ -75,7 +75,8 @@ describe("LoginForm", () => {
 		await user.type(screen.getByLabelText(/mot de passe/i), "Password123")
 
 		// Soumettre via le formulaire directement
-		const form = document.querySelector("form")!
+		const form = document.querySelector("form")
+		if (!form) throw new Error("form not found")
 		await act(async () => {
 			form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }))
 		})

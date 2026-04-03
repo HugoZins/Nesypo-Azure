@@ -21,7 +21,7 @@ export function getColumns(showOwner: boolean): ColumnDef<TodoList>[] {
 		columns.push({
 			accessorKey: "ownerEmail",
 			header: "Propriétaire",
-			cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original.ownerEmail ?? "—"}</span>,
+			cell: ({ row }) => <span className="text-muted-foreground text-sm">{row.original.ownerEmail ?? "—"}</span>,
 		})
 	}
 
@@ -46,7 +46,7 @@ export function getColumns(showOwner: boolean): ColumnDef<TodoList>[] {
 				const completed = row.original.completedTasks ?? 0
 				const total = row.original.totalTasks ?? 0
 				return (
-					<span className="text-sm text-muted-foreground">
+					<span className="text-muted-foreground text-sm">
 						{completed}/{total}
 					</span>
 				)
