@@ -1,0 +1,44 @@
+FROM php:8.3-fpm-alpine
+
+# Dépendances système
+RUN apk add --no-cache \
+    git \
+    unzip \
+    libpq-dev \
+    nginx \
+    curl
+
+# Extensions PHP
+RUN docker-php-ext-install pdo pdo_pgsql opcache
+
+# Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+# Copie du code backend
+COPY backend/ .
+
+# Créer un .env minimal pour le build
+RUN echo "APP_ENV=prod" > .env \
+    && echo "APP_SECRET=placeholder" >> .env \
+    && echo "DATABASE_URL=postgresql://user:password@localhost:5432/dbname" >> .env
+
+# Installation des dépendances sans dev
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+# Vider le cache Symfony manuellement
+RUN php bin/console cache:warmup --env=prod || true
+
+# Configuration Nginx
+COPY docker/backend/nginx.conf /etc/nginx/nginx.conf
+
+# Permissions
+RUN chown -R www-data:www-data /var/www/html/var
+
+EXPOSE 8000
+
+COPY docker/backend/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+CMD ["/entrypoint.sh"]

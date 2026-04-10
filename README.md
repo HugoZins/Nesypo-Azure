@@ -1,84 +1,395 @@
-# Nesypo — Gestionnaire de TodoLists
+# Nesypo-Azure — Déploiement Cloud Azure
 
-![Backend CI](https://github.com/HugoZins/Nesypo/actions/workflows/backend.yml/badge.svg)
-![Frontend CI](https://github.com/HugoZins/Nesypo/actions/workflows/frontend.yml/badge.svg)
+Projet d'évaluation pratique Azure — Conteneurisation, déploiement PaaS, sécurité et exploitation.
 
-Application fullstack de gestion de listes de tâches multi-utilisateurs, développée  
-dans un objectif d'apprentissage des outils et pratiques utilisés en entreprise.
+Ce dépôt est une adaptation du projet [Nesypo](https://github.com/HugoZins/Nesypo), une application fullstack de gestion de TodoLists, portée sur Microsoft Azure dans un cadre proche d'un environnement professionnel.
 
 ---
 
-## Stack technique
+## Choix technologiques
 
-### Backend
-- **Symfony 7.4** — framework PHP
-- **Doctrine ORM** — mapping objet-relationnel et migrations
-- **PostgreSQL 15** — base de données
-- **LexikJWTAuthenticationBundle** — authentification par JWT en cookie HTTP-only
-- **gesdinet/jwt-refresh-token-bundle** — refresh token automatique
-- **NelmioApiDocBundle** — documentation OpenAPI/Swagger externalisée
-- **NelmioCorsBundle** — gestion des headers CORS
-- **PHPUnit 12** — tests unitaires et fonctionnels (80 tests)
-- **DAMA DoctrineTestBundle** — isolation des tests via transactions
-- **FakerPHP** — génération de fixtures réalistes
+### Application
+- **Backend** : Symfony 7.4 (PHP) — API REST avec authentification JWT
+- **Frontend** : Next.js 16 / React 19 — interface utilisateur avec App Router
+- **Base de données** : Azure Cosmos DB for PostgreSQL (compatible avec Doctrine ORM sans réécriture)
+- **Conteneurisation** : Docker avec images de production multi-stage
 
-### Frontend
-- **Next.js 16 / React 19** — framework frontend avec App Router
-- **TanStack Query v5** — gestion du cache et des requêtes API
-- **TanStack Table** — tableau avec pagination côté serveur
-- **shadcn/ui + Tailwind CSS** — composants UI et styles
-- **ky** — client HTTP avec intercepteurs (retry sur 401)
-- **Zod + react-hook-form** — validation de formulaires
-- **Zustand** — état global d'authentification (utilisateur connecté, rôles, déconnexion)
-- **Vitest + React Testing Library + MSW** — tests composants et hooks (25 tests)
-
-### Infrastructure
-- **Docker Compose** — orchestration des services
-- **PostgreSQL 15** — base de données partagée entre dev et test
+### Pourquoi ce projet existant ?
+Plutôt que de développer une TodoList from scratch, j'ai adapté un projet fullstack déjà abouti afin de me concentrer entièrement sur la maîtrise d'Azure : conteneurisation de production, déploiement PaaS, gestion des secrets, stockage objet et exploitation cloud.
 
 ---
 
-## Architecture
+## Architecture Azure
+
 ```
-Nesypo/  
-├── backend/                  # API Symfony
-│   ├── src/
-│   │   ├── Controller/       # Endpoints REST
-│   │   ├── Service/          # Logique métier
-│   │   ├── Entity/           # Entités Doctrine
-│   │   ├── DTO/              # Objets de transfert de données
-│   │   ├── Repository/       # Requêtes Doctrine
-│   │   ├── OpenApi/          # Documentation API externalisée
-│   │   └── Enum/             # Énumérations (TaskPriority)
-│   └── tests/
-│       ├── Unit/             # Tests unitaires (services)
-│       └── Functional/       # Tests fonctionnels (controllers HTTP)
-└── frontend/                 # App Next.js
-    └── src/
-        ├── app/              # Pages et layouts (App Router)
-        ├── components/       # Composants React réutilisables
-        ├── hooks/            # Hooks TanStack Query par domaine
-        ├── lib/              # Clients API, validation, utilitaires
-        ├── stores/           # État global Zustand
-        ├── types/            # Types TypeScript
-        └── tests/            # Tests Vitest + RTL + MSW
+                        ┌──────────────────────────────────────────┐
+                        │           Resource Group: rg-nesypo      │
+                        │                                          │
+   Utilisateur          │   ┌──────────────┐  ┌────────────────┐   │
+      │                 │   │  App Service │  │  App Service   │   │
+      │  HTTPS          │   │  (Frontend)  │  │  (Backend)     │   │
+      └────────────────►│   │  Next.js 16  │  │  Symfony 7.4   │   │
+                        │   └──────┬───────┘  └───────┬────────┘   │
+                        │          │   API calls       │           │
+                        │          └──────────────────►│           │
+                        │                              │           │
+                        │   ┌──────────────┐           │           │
+                        │   │  Azure       │◄──────────┘           │
+                        │   │  Cosmos DB   │  Doctrine ORM         │
+                        │   │  PostgreSQL  │                       │
+                        │   └──────────────┘                       │
+                        │                                          │
+                        │   ┌──────────────┐  ┌────────────────┐   │
+                        │   │  Azure       │  │  Azure         │   │
+                        │   │  Key Vault   │  │  Blob Storage  │   │
+                        │   │  (secrets)   │  │  (fichiers)    │   │
+                        │   └──────────────┘  └────────────────┘   │
+                        │                                          │
+                        │   ┌──────────────────────────────────┐   │
+                        │   │  Azure Container Registry (ACR)  │   │
+                        │   │  nesypoacr.azurecr.io            │   │
+                        │   │  ├── nesypo-backend:latest       │   │
+                        │   │  └── nesypo-frontend:latest      │   │
+                        │   └──────────────────────────────────┘   │
+                        └──────────────────────────────────────────┘
 ```
 
 ---
 
-## Fonctionnalités
+## Ressources Azure utilisées
 
-- Inscription et connexion avec JWT en cookie HTTP-only
-- Refresh token automatique transparent (7 jours)
-- Tableau de bord avec liste paginée des todolists
-- Création, modification et suppression de todolists et tâches
-- Progression visuelle par barre de couleur (rouge → vert)
-- Rôles utilisateur (ROLE_USER) et administrateur (ROLE_ADMIN)
-- Documentation API interactive via Swagger UI (`/api/doc`)
+| Ressource | Nom | Rôle |
+|---|---|---|
+| Resource Group | rg-nesypo | Conteneur de toutes les ressources |
+| Azure Container Registry | nesypoacr | Stockage des images Docker |
+| App Service Plan | nesypo-plan | Plan d'hébergement (SKU B1 Linux) |
+| App Service (Backend) | nesypo-backend | Hébergement API Symfony |
+| App Service (Frontend) | nesypo-frontend | Hébergement Next.js |
+| Azure Cosmos DB | nesypo-db | Base de données PostgreSQL managée |
+| Azure Key Vault | nesypo-kv | Stockage sécurisé des secrets |
+| Azure Storage Account | nesypostorage | Stockage Blob (exports, fichiers) |
+| Managed Identity | nesypo-backend (system) | Accès sécurisé au Key Vault sans credentials |
 
 ---
 
-## Installation
+## Commandes Azure CLI utilisées
+
+### Connexion et configuration
+```bash
+# Connexion au compte Azure
+az login
+
+# Vérification de l'abonnement actif
+az account show
+```
+
+### Resource Group
+```bash
+# Création du resource group
+az group create \
+  --name rg-nesypo \
+  --location spaincentral
+```
+
+### Azure Container Registry (ACR)
+```bash
+# Enregistrement du provider (si nécessaire)
+az provider register --namespace Microsoft.ContainerRegistry
+
+# Création de l'ACR
+az acr create \
+  --resource-group rg-nesypo \
+  --name nesypoacr \
+  --sku Basic \
+  --admin-enabled true \
+  --location spaincentral
+
+# Authentification Docker vers l'ACR
+az acr login --name nesypoacr
+
+# Build des images Docker de production
+docker build \
+  -f docker/backend/Dockerfile.prod \
+  -t nesypoacr.azurecr.io/nesypo-backend:latest \
+  .
+
+docker build \
+  -f docker/frontend/Dockerfile.prod \
+  -t nesypoacr.azurecr.io/nesypo-frontend:latest \
+  .
+
+# Push des images vers l'ACR
+docker push nesypoacr.azurecr.io/nesypo-backend:latest
+docker push nesypoacr.azurecr.io/nesypo-frontend:latest
+
+# Vérification des images présentes dans l'ACR
+az acr repository list --name nesypoacr --output table
+```
+
+### App Service Plan et Web Apps
+```bash
+# Création du plan App Service (Linux, B1)
+az appservice plan create \
+  --name nesypo-plan \
+  --resource-group rg-nesypo \
+  --is-linux \
+  --sku B1 \
+  --location spaincentral
+
+# Création de la Web App backend
+az webapp create \
+  --resource-group rg-nesypo \
+  --plan nesypo-plan \
+  --name nesypo-backend \
+  --deployment-container-image-name nesypoacr.azurecr.io/nesypo-backend:latest
+
+# Création de la Web App frontend
+az webapp create \
+  --resource-group rg-nesypo \
+  --plan nesypo-plan \
+  --name nesypo-frontend \
+  --deployment-container-image-name nesypoacr.azurecr.io/nesypo-frontend:latest
+
+# Configuration des variables d'environnement du backend
+az webapp config appsettings set \
+  --resource-group rg-nesypo \
+  --name nesypo-backend \
+  --settings \
+    APP_ENV=prod \
+    DATABASE_URL="@Microsoft.KeyVault(SecretUri=https://nesypo-kv.vault.azure.net/secrets/database-url/)"
+
+# Autoriser l'App Service à puller depuis l'ACR
+az webapp config container set \
+  --resource-group rg-nesypo \
+  --name nesypo-backend \
+  --docker-registry-server-url https://nesypoacr.azurecr.io \
+  --docker-registry-server-user nesypoacr \
+  --docker-registry-server-password <ACR_PASSWORD>
+```
+
+### Azure Cosmos DB for PostgreSQL
+```bash
+# Création du cluster Cosmos DB for PostgreSQL
+az cosmosdb postgres cluster create \
+  --resource-group rg-nesypo \
+  --cluster-name nesypo-db \
+  --location spaincentral \
+  --coordinator-v-cores 1 \
+  --coordinator-server-edition BurstableMemoryOptimized \
+  --node-count 0 \
+  --administrator-login-password <MOT_DE_PASSE>
+
+# Récupération de la chaîne de connexion
+az cosmosdb postgres cluster show \
+  --resource-group rg-nesypo \
+  --cluster-name nesypo-db \
+  --query "serverNames"
+```
+
+La `DATABASE_URL` Symfony prend alors la forme :
+```
+postgresql://citus:<PASSWORD>@nesypo-db.postgres.cosmos.azure.com:5432/citus?sslmode=require
+```
+
+Doctrine ORM ne nécessite aucune modification car Cosmos DB for PostgreSQL est entièrement compatible avec le protocole PostgreSQL standard.
+
+### Azure Key Vault et Managed Identity
+```bash
+# Création du Key Vault
+az keyvault create \
+  --name nesypo-kv \
+  --resource-group rg-nesypo \
+  --location spaincentral
+
+# Stockage des secrets dans le Key Vault
+az keyvault secret set \
+  --vault-name nesypo-kv \
+  --name database-url \
+  --value "postgresql://citus:<PASSWORD>@nesypo-db.postgres.cosmos.azure.com:5432/citus?sslmode=require"
+
+az keyvault secret set \
+  --vault-name nesypo-kv \
+  --name app-secret \
+  --value "<SYMFONY_APP_SECRET>"
+
+az keyvault secret set \
+  --vault-name nesypo-kv \
+  --name jwt-passphrase \
+  --value "<JWT_PASSPHRASE>"
+
+# Activation de la Managed Identity sur l'App Service backend
+az webapp identity assign \
+  --resource-group rg-nesypo \
+  --name nesypo-backend
+
+# Récupération du principal ID de la Managed Identity
+PRINCIPAL_ID=$(az webapp identity show \
+  --resource-group rg-nesypo \
+  --name nesypo-backend \
+  --query principalId \
+  --output tsv)
+
+# Attribution du rôle "Key Vault Secrets User" à la Managed Identity
+az keyvault set-policy \
+  --name nesypo-kv \
+  --object-id $PRINCIPAL_ID \
+  --secret-permissions get list
+```
+
+L'App Service peut alors référencer les secrets directement dans ses variables d'environnement avec la syntaxe Key Vault Reference :
+```
+@Microsoft.KeyVault(SecretUri=https://nesypo-kv.vault.azure.net/secrets/database-url/)
+```
+
+### Azure Blob Storage
+```bash
+# Création du Storage Account
+az storage account create \
+  --name nesypostorage \
+  --resource-group rg-nesypo \
+  --location spaincentral \
+  --sku Standard_LRS
+
+# Création du Blob container
+az storage container create \
+  --name exports \
+  --account-name nesypostorage \
+  --public-access off
+
+# Exemple : upload d'un fichier vers le Blob container
+az storage blob upload \
+  --account-name nesypostorage \
+  --container-name exports \
+  --name tasks-export.json \
+  --file tasks-export.json
+
+# Liste des blobs dans le container
+az storage blob list \
+  --account-name nesypostorage \
+  --container-name exports \
+  --output table
+
+# Configuration d'une règle de cycle de vie (expiration après 30 jours)
+az storage account management-policy create \
+  --account-name nesypostorage \
+  --resource-group rg-nesypo \
+  --policy '{
+    "rules": [{
+      "name": "expire-exports",
+      "enabled": true,
+      "type": "Lifecycle",
+      "definition": {
+        "filters": {"blobTypes": ["blockBlob"], "prefixMatch": ["exports/"]},
+        "actions": {"baseBlob": {"delete": {"daysAfterModificationGreaterThan": 30}}}
+      }
+    }]
+  }'
+```
+
+### Deployment Slot (Staging)
+```bash
+# Création du slot staging pour le backend
+az webapp deployment slot create \
+  --resource-group rg-nesypo \
+  --name nesypo-backend \
+  --slot staging
+
+# Déploiement d'une image sur le slot staging
+az webapp config container set \
+  --resource-group rg-nesypo \
+  --name nesypo-backend \
+  --slot staging \
+  --docker-custom-image-name nesypoacr.azurecr.io/nesypo-backend:staging
+
+# Swap staging → production
+az webapp deployment slot swap \
+  --resource-group rg-nesypo \
+  --name nesypo-backend \
+  --slot staging \
+  --target-slot production
+```
+
+### Scaling manuel
+```bash
+# Passage à 2 instances (scale out)
+az appservice plan update \
+  --name nesypo-plan \
+  --resource-group rg-nesypo \
+  --number-of-workers 2
+
+# Retour à 1 instance
+az appservice plan update \
+  --name nesypo-plan \
+  --resource-group rg-nesypo \
+  --number-of-workers 1
+```
+
+---
+
+## URL de l'application
+
+> ⚠️ Le déploiement sur App Service n'a pas pu être finalisé en raison d'un throttling de l'abonnement Azure for Students lors de la création de l'App Service Plan (erreur 429 persistante malgré plusieurs tentatives via CLI et portail, sur toutes les régions disponibles). Les images Docker sont bien présentes dans l'ACR et l'application fonctionne localement.
+
+- **Frontend (local)** : http://localhost:3000
+- **Backend (local)** : http://localhost:8000
+- **ACR** : nesypoacr.azurecr.io
+- **Frontend Azure (prévu)** : https://nesypo-frontend.azurewebsites.net
+- **Backend Azure (prévu)** : https://nesypo-backend.azurewebsites.net
+
+---
+
+## Explication des services Azure utilisés
+
+### Azure Cosmos DB for PostgreSQL
+Cosmos DB for PostgreSQL (anciennement Citus) est un service de base de données managé entièrement compatible avec le protocole PostgreSQL. Je l'ai choisi car mon backend Symfony utilise Doctrine ORM avec PostgreSQL : aucune migration de code n'est nécessaire, seule la chaîne de connexion `DATABASE_URL` change. Azure gère les sauvegardes, la haute disponibilité et les mises à jour automatiquement.
+
+### Azure Key Vault
+Key Vault est un coffre-fort cloud pour stocker les secrets de l'application (chaîne de connexion à la base de données, clé secrète Symfony, passphrase JWT) de manière sécurisée et auditée. Plutôt que de stocker ces informations dans des variables d'environnement en clair ou dans le code source, Key Vault les centralise et n'en autorise l'accès qu'aux identités autorisées.
+
+### Managed Identity
+La Managed Identity est une identité Azure attribuée automatiquement à l'App Service backend. Elle permet à l'application de s'authentifier auprès du Key Vault sans aucun mot de passe ni clé d'API dans le code — Azure gère le cycle de vie des credentials de façon transparente. C'est le mécanisme recommandé pour sécuriser les accès entre services Azure.
+
+### Azure Blob Storage
+Blob Storage est un service de stockage objet pour fichiers non structurés. Dans ce projet, il est utilisé pour stocker des exports JSON des tâches générés par l'API Symfony. Un container `exports` est créé avec une règle de cycle de vie qui supprime automatiquement les fichiers après 30 jours. Les blobs peuvent être rendus accessibles via URL publique ou URL signée temporaire (SAS).
+
+### Deployment Slots
+Les slots de déploiement permettent d'avoir plusieurs environnements (production et staging) sur le même App Service. On déploie d'abord une nouvelle version sur le slot `staging`, on la teste, puis on effectue un **swap** instantané qui bascule le trafic vers la nouvelle version sans downtime. En cas de problème, le swap peut être annulé immédiatement.
+
+### Scaling manuel
+Le scaling manuel permet d'augmenter le nombre d'instances (workers) de l'App Service Plan pour absorber une charge plus importante. Avec le SKU B1, on peut passer de 1 à plusieurs instances en une seule commande. En production, on utiliserait plutôt l'autoscaling basé sur des métriques (CPU, mémoire, requêtes), mais le scaling manuel permet de comprendre le principe et de démontrer l'élasticité du cloud.
+
+---
+
+## Ce qui a été réalisé
+
+| Étape | Statut | Détail |
+|---|---|---|
+| Application TodoList fonctionnelle | ✅ | Symfony + Next.js, fonctionnel en local |
+| Dockerfiles de production | ✅ | Backend (PHP-FPM + Nginx) et Frontend (Next.js standalone) |
+| Azure Container Registry | ✅ | nesypoacr.azurecr.io créé en Spain Central |
+| Push des images Docker | ✅ | nesypo-backend:latest et nesypo-frontend:latest |
+| App Service Plan | ❌ | Bloqué par throttling 429 de l'abonnement étudiant |
+| App Service (Backend + Frontend) | ❌ | Dépend du plan |
+| Cosmos DB | ⏳ | Prévu, commandes documentées |
+| Key Vault | ⏳ | Prévu, commandes documentées |
+| Managed Identity | ⏳ | Prévu, commandes documentées |
+| Blob Storage | ⏳ | Prévu, commandes documentées |
+| Deployment Slot | ⏳ | Prévu, commandes documentées |
+| Scaling manuel | ⏳ | Prévu, commandes documentées |
+
+---
+
+## Limites rencontrées
+
+- **Throttling App Service Plan** : L'abonnement Azure for Students (Emineo Education) a retourné une erreur 429 persistante lors de toutes les tentatives de création d'App Service Plan, aussi bien via la CLI qu'via le portail Azure, sur toutes les régions disponibles (Spain Central, West Europe, North Europe, Sweden Central, Switzerland North) et tous les SKUs testés (F1, B1, S1). La création de l'ACR en Spain Central a fonctionné normalement sur le même abonnement. Un signalement a été effectué auprès du formateur.
+
+- **ACR Tasks non disponibles** : La commande `az acr build` (build dans le cloud) n'est pas disponible sur l'abonnement étudiant. Le build a donc été effectué localement avec Docker puis poussé vers l'ACR.
+
+- **Régions restreintes** : L'abonnement étudiant ne donne accès qu'à un sous-ensemble de régions Azure. France Central notamment est bloquée, Spain Central a été retenu comme région de travail.
+
+---
+
+## Installation locale
 
 ### Prérequis
 - Docker et Docker Compose
@@ -86,89 +397,28 @@ Nesypo/
 ### Démarrage
 
 ```bash
-# Cloner le projet
-git clone https://github.com/HugoZins/Nesypo.git
-cd Nesypo
+git clone https://github.com/HugoZins/Nesypo-Azure.git
+cd Nesypo-Azure
 
-# Copier les fichiers d'environnement en premier
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env.local
 
-# Démarrer les services
 docker compose up -d
 
-# Backend — installation et configuration
 docker compose exec backend composer install
 docker compose exec backend symfony console lexik:jwt:generate-keypair
 docker compose exec backend symfony console doctrine:migrations:migrate --no-interaction
 docker compose exec backend symfony console doctrine:fixtures:load --no-interaction
-
-# Copier les fichiers d'environnement
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env.local
 ```
 
-L'application est accessible sur :
 - **Frontend** → http://localhost:3000
 - **API** → http://localhost:8000
 - **Documentation API** → http://localhost:8000/api/doc
 
 ### Comptes de test
 
-| Email            | Mot de passe | Rôle           |
-|------------------|--------------|----------------|
-| admin@todo.local | Admin123!    | Administrateur |
-| alice@todo.local | User123!     | Utilisateur    |
-| bob@todo.local   | User123!     | Utilisateur    |
-
----
-
-## Tests
-
-```bash
-# Backend — tous les tests
-docker compose exec backend php bin/phpunit --testdox
-
-# Backend — suite spécifique
-docker compose exec backend php bin/phpunit tests/Unit --testdox
-docker compose exec backend php bin/phpunit tests/Functional --testdox
-
-# Frontend — tous les tests
-docker compose exec frontend npx vitest run --reporter=verbose
-
-# Frontend — fichier spécifique
-docker compose exec frontend npx vitest run src/tests/components/LoginForm.test.tsx
-```
-
----
-
-## Concepts abordés
-
-### Backend
-| Concept              | Outil                             | Implémentation                                        |
-|----------------------|-----------------------------------|-------------------------------------------------------|
-| Architecture MVC     | Symfony                           | Controllers → Services → Repositories                 |
-| ORM et migrations    | Doctrine                          | Entités, repositories, migrations versionnées         |
-| Authentification JWT | LexikJWT                          | Cookie HTTP-only, expiration 1h                       |
-| Refresh token        | gesdinet/jwt-refresh-token-bundle | Cookie séparé, durée 7 jours                          |
-| Validation           | Symfony Validator                 | DTOs annotés avec contraintes                         |
-| Tests unitaires      | PHPUnit + stubs/mocks             | Isolation des services sans base de données           |
-| Tests fonctionnels   | PHPUnit + WebTestCase             | Requêtes HTTP réelles sur base de test isolée         |
-| Isolation tests BDD  | DAMA DoctrineTestBundle           | Rollback automatique entre chaque test                |
-| Pagination serveur   | Doctrine QueryBuilder             | Query params page/limit + PaginatedResponse DTO       |
-| Documentation API    | NelmioApiDocBundle                | Externalisée en classes dédiées par route             |
-| Fixtures             | FakerPHP                          | Données réalistes et aléatoires à chaque rechargement |
-| CORS                 | NelmioCorsBundle                  | Configuration par environnement                       |
-
-### Frontend
-| Concept                | Outil                          | Implémentation                                                                                                                    |
-|------------------------|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| Framework UI           | Next.js 16 + App Router        | Pages, layouts, routing, metadata                                                                                                 |
-| Styles                 | Tailwind CSS + shadcn/ui       | Composants accessibles et personnalisables                                                                                        |
-| Requêtes API           | ky                             | Client HTTP avec retry automatique sur 401                                                                                        |
-| Cache et état serveur  | TanStack Query v5              | Invalidation ciblée, pagination, placeholderData                                                                                  |
-| Tableau paginé         | TanStack Table                 | Colonnes dynamiques selon le rôle utilisateur                                                                                     |
-| Validation formulaires | Zod + react-hook-form          | Schémas typés, messages d'erreur localisés                                                                                        |
-| État global            | Zustand                        | Stocke l'utilisateur connecté (id, email, rôles) après login — évite un appel `/api/me` à chaque composant qui vérifie les droits |
-| Tests de composants    | Vitest + React Testing Library | Rendu DOM, interactions utilisateur simulées                                                                                      |
-| Mock API en tests      | MSW                            | Interception des requêtes sans serveur réel                                                                                       |
+| Email | Mot de passe | Rôle |
+|---|---|---|
+| admin@todo.local | Admin123! | Administrateur |
+| alice@todo.local | User123! | Utilisateur |
+| bob@todo.local | User123! | Utilisateur |
