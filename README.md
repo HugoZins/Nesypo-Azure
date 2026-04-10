@@ -2,7 +2,7 @@
 
 Projet d'évaluation pratique Azure — Conteneurisation, déploiement PaaS, sécurité et exploitation.
 
-Ce dépôt est une adaptation du projet [Nesypo](https://github.com/HugoZins/Nesypo), une application fullstack de gestion de TodoLists, portée sur Microsoft Azure dans un cadre proche d'un environnement professionnel.
+Ce dépôt est une adaptation du projet Nesypo, une application fullstack de gestion de TodoLists, portée sur Microsoft Azure dans un cadre proche d'un environnement professionnel.
 
 ---
 
@@ -24,12 +24,12 @@ Plutôt que de développer une TodoList from scratch, j'ai adapté un projet ful
 ```
                         ┌──────────────────────────────────────────┐
                         │           Resource Group: rg-nesypo      │
-                        │                                          │
-   Utilisateur          │   ┌──────────────┐  ┌────────────────┐   │
-      │                 │   │  App Service │  │  App Service   │   │
-      │  HTTPS          │   │  (Frontend)  │  │  (Backend)     │   │
-      └────────────────►│   │  Next.js 16  │  │  Symfony 7.4   │   │
-                        │   └──────┬───────┘  └───────┬────────┘   │
+                        │                (Poland Central)          │
+   Utilisateur          │   ┌──────────────┐   ┌────────────────┐  │
+      │                 │   │  App Service │   │  App Service   │  │
+      │  HTTPS          │   │  (Frontend)  │   │  (Backend)     │  │
+      └────────────────►│   │  Next.js 16  │   │  Symfony 7.4   │  │
+                        │   └──────┬───────┘   └───────┬────────┘  │
                         │          │   API calls       │           │
                         │          └──────────────────►│           │
                         │                              │           │
@@ -42,7 +42,7 @@ Plutôt que de développer une TodoList from scratch, j'ai adapté un projet ful
                         │   ┌──────────────┐  ┌────────────────┐   │
                         │   │  Azure       │  │  Azure         │   │
                         │   │  Key Vault   │  │  Blob Storage  │   │
-                        │   │  (secrets)   │  │  (fichiers)    │   │
+                        │   │  (secrets)   │  │  (exports JSON)│   │
                         │   └──────────────┘  └────────────────┘   │
                         │                                          │
                         │   ┌──────────────────────────────────┐   │
@@ -58,17 +58,29 @@ Plutôt que de développer une TodoList from scratch, j'ai adapté un projet ful
 
 ## Ressources Azure utilisées
 
-| Ressource | Nom | Rôle |
-|---|---|---|
-| Resource Group | rg-nesypo | Conteneur de toutes les ressources |
-| Azure Container Registry | nesypoacr | Stockage des images Docker |
-| App Service Plan | nesypo-plan | Plan d'hébergement (SKU B1 Linux) |
-| App Service (Backend) | nesypo-backend | Hébergement API Symfony |
-| App Service (Frontend) | nesypo-frontend | Hébergement Next.js |
-| Azure Cosmos DB | nesypo-db | Base de données PostgreSQL managée |
-| Azure Key Vault | nesypo-kv | Stockage sécurisé des secrets |
-| Azure Storage Account | nesypostorage | Stockage Blob (exports, fichiers) |
-| Managed Identity | nesypo-backend (system) | Accès sécurisé au Key Vault sans credentials |
+| Ressource | Nom | Région | Rôle |
+|---|---|---|---|
+| Resource Group | rg-nesypo | Poland Central | Conteneur de toutes les ressources |
+| Azure Container Registry | nesypoacr | Spain Central | Stockage des images Docker |
+| App Service Plan | nesypo-plan | Poland Central | Plan d'hébergement (SKU S1 Linux) |
+| App Service (Backend) | nesypo-backend | Poland Central | Hébergement API Symfony |
+| App Service (Frontend) | nesypo-frontend | Poland Central | Hébergement Next.js |
+| Azure Cosmos DB | nesypo-db | Poland Central | Base de données PostgreSQL managée |
+| Azure Key Vault | nesypo-kv | Poland Central | Stockage sécurisé des secrets |
+| Azure Storage Account | nesypostorage | Poland Central | Stockage Blob (exports JSON) |
+| Managed Identity | nesypo-backend (system) | — | Accès sécurisé au Key Vault sans credentials |
+
+---
+
+## URLs de l'application
+
+- **Frontend Azure** : https://nesypo-frontend.azurewebsites.net
+- **Backend Azure** : https://nesypo-backend.azurewebsites.net
+- **Staging Backend** : https://nesypo-backend-staging.azurewebsites.net
+- **ACR** : nesypoacr.azurecr.io
+- **Frontend (local)** : http://localhost:3000
+- **Backend (local)** : http://localhost:8000
+- **Documentation API (local)** : http://localhost:8000/api/doc
 
 ---
 
@@ -88,15 +100,16 @@ az account show
 # Création du resource group
 az group create \
   --name rg-nesypo \
-  --location spaincentral
+  --location polandcentral
 ```
 
 ### Azure Container Registry (ACR)
 ```bash
-# Enregistrement du provider (si nécessaire)
+# Enregistrement du provider
 az provider register --namespace Microsoft.ContainerRegistry
+az provider show --namespace Microsoft.ContainerRegistry --query "registrationState"
 
-# Création de l'ACR
+# Création de l'ACR (Spain Central — seule région disponible pour ce service)
 az acr create \
   --resource-group rg-nesypo \
   --name nesypoacr \
@@ -107,7 +120,7 @@ az acr create \
 # Authentification Docker vers l'ACR
 az acr login --name nesypoacr
 
-# Build des images Docker de production
+# Build des images Docker de production (en local, ACR Tasks non disponible sur abonnement étudiant)
 docker build \
   -f docker/backend/Dockerfile.prod \
   -t nesypoacr.azurecr.io/nesypo-backend:latest \
@@ -128,13 +141,13 @@ az acr repository list --name nesypoacr --output table
 
 ### App Service Plan et Web Apps
 ```bash
-# Création du plan App Service (Linux, B1)
+# Création du plan App Service (Linux, S1 — B1 insuffisant pour les slots)
 az appservice plan create \
   --name nesypo-plan \
   --resource-group rg-nesypo \
   --is-linux \
-  --sku B1 \
-  --location spaincentral
+  --sku S1 \
+  --location polandcentral
 
 # Création de la Web App backend
 az webapp create \
@@ -150,123 +163,151 @@ az webapp create \
   --name nesypo-frontend \
   --deployment-container-image-name nesypoacr.azurecr.io/nesypo-frontend:latest
 
-# Configuration des variables d'environnement du backend
+# Configuration de l'accès à l'ACR pour les deux Web Apps
+az webapp config container set \
+  --resource-group rg-nesypo \
+  --name nesypo-backend \
+  --container-image-name nesypoacr.azurecr.io/nesypo-backend:latest \
+  --container-registry-url https://nesypoacr.azurecr.io \
+  --container-registry-user nesypoacr \
+  --container-registry-password <ACR_PASSWORD>
+
+az webapp config container set \
+  --resource-group rg-nesypo \
+  --name nesypo-frontend \
+  --container-image-name nesypoacr.azurecr.io/nesypo-frontend:latest \
+  --container-registry-url https://nesypoacr.azurecr.io \
+  --container-registry-user nesypoacr \
+  --container-registry-password <ACR_PASSWORD>
+
+# Configuration des variables d'environnement du backend via Key Vault References
 az webapp config appsettings set \
   --resource-group rg-nesypo \
   --name nesypo-backend \
   --settings \
     APP_ENV=prod \
-    DATABASE_URL="@Microsoft.KeyVault(SecretUri=https://nesypo-kv.vault.azure.net/secrets/database-url/)"
-
-# Autoriser l'App Service à puller depuis l'ACR
-az webapp config container set \
-  --resource-group rg-nesypo \
-  --name nesypo-backend \
-  --docker-registry-server-url https://nesypoacr.azurecr.io \
-  --docker-registry-server-user nesypoacr \
-  --docker-registry-server-password <ACR_PASSWORD>
+    DATABASE_URL='@Microsoft.KeyVault(SecretUri=https://nesypo-kv.vault.azure.net/secrets/database-url/)' \
+    APP_SECRET='@Microsoft.KeyVault(SecretUri=https://nesypo-kv.vault.azure.net/secrets/app-secret/)' \
+    JWT_PASSPHRASE='@Microsoft.KeyVault(SecretUri=https://nesypo-kv.vault.azure.net/secrets/jwt-passphrase/)'
 ```
 
 ### Azure Cosmos DB for PostgreSQL
 ```bash
+# Enregistrement du provider
+az provider register --namespace Microsoft.DocumentDB
+
 # Création du cluster Cosmos DB for PostgreSQL
 az cosmosdb postgres cluster create \
   --resource-group rg-nesypo \
   --cluster-name nesypo-db \
-  --location spaincentral \
+  --location polandcentral \
   --coordinator-v-cores 1 \
   --coordinator-server-edition BurstableMemoryOptimized \
+  --coordinator-storage-quota-in-mb 32768 \
   --node-count 0 \
   --administrator-login-password <MOT_DE_PASSE>
-
-# Récupération de la chaîne de connexion
-az cosmosdb postgres cluster show \
-  --resource-group rg-nesypo \
-  --cluster-name nesypo-db \
-  --query "serverNames"
 ```
 
-La `DATABASE_URL` Symfony prend alors la forme :
+Le serveur est accessible à l'adresse :
 ```
-postgresql://citus:<PASSWORD>@nesypo-db.postgres.cosmos.azure.com:5432/citus?sslmode=require
+c-nesypo-db.hksavotyka7vxb.postgres.cosmos.azure.com
+```
+
+La `DATABASE_URL` Symfony prend la forme :
+```
+postgresql://citus:<PASSWORD>@c-nesypo-db.hksavotyka7vxb.postgres.cosmos.azure.com:5432/citus?sslmode=require
 ```
 
 Doctrine ORM ne nécessite aucune modification car Cosmos DB for PostgreSQL est entièrement compatible avec le protocole PostgreSQL standard.
 
 ### Azure Key Vault et Managed Identity
 ```bash
+# Enregistrement du provider
+az provider register --namespace Microsoft.KeyVault
+
 # Création du Key Vault
 az keyvault create \
   --name nesypo-kv \
   --resource-group rg-nesypo \
-  --location spaincentral
+  --location polandcentral
+
+# Attribution du rôle pour pouvoir écrire des secrets (RBAC)
+USER_ID=$(az ad signed-in-user show --query id --output tsv)
+az role assignment create \
+  --role "Key Vault Secrets Officer" \
+  --assignee $USER_ID \
+  --scope /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/rg-nesypo/providers/Microsoft.KeyVault/vaults/nesypo-kv
 
 # Stockage des secrets dans le Key Vault
 az keyvault secret set \
   --vault-name nesypo-kv \
   --name database-url \
-  --value "postgresql://citus:<PASSWORD>@nesypo-db.postgres.cosmos.azure.com:5432/citus?sslmode=require"
+  --value 'postgresql://citus:<PASSWORD>@c-nesypo-db.hksavotyka7vxb.postgres.cosmos.azure.com:5432/citus?sslmode=require'
 
 az keyvault secret set \
   --vault-name nesypo-kv \
   --name app-secret \
-  --value "<SYMFONY_APP_SECRET>"
+  --value '<SYMFONY_APP_SECRET>'
 
 az keyvault secret set \
   --vault-name nesypo-kv \
   --name jwt-passphrase \
-  --value "<JWT_PASSPHRASE>"
+  --value '<JWT_PASSPHRASE>'
 
 # Activation de la Managed Identity sur l'App Service backend
 az webapp identity assign \
   --resource-group rg-nesypo \
   --name nesypo-backend
 
-# Récupération du principal ID de la Managed Identity
-PRINCIPAL_ID=$(az webapp identity show \
-  --resource-group rg-nesypo \
-  --name nesypo-backend \
-  --query principalId \
-  --output tsv)
-
 # Attribution du rôle "Key Vault Secrets User" à la Managed Identity
-az keyvault set-policy \
-  --name nesypo-kv \
-  --object-id $PRINCIPAL_ID \
-  --secret-permissions get list
+az role assignment create \
+  --role "Key Vault Secrets User" \
+  --assignee <MANAGED_IDENTITY_PRINCIPAL_ID> \
+  --scope /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/rg-nesypo/providers/Microsoft.KeyVault/vaults/nesypo-kv
 ```
 
-L'App Service peut alors référencer les secrets directement dans ses variables d'environnement avec la syntaxe Key Vault Reference :
+L'App Service référence les secrets via la syntaxe Key Vault Reference :
 ```
 @Microsoft.KeyVault(SecretUri=https://nesypo-kv.vault.azure.net/secrets/database-url/)
 ```
 
 ### Azure Blob Storage
 ```bash
+# Enregistrement du provider
+az provider register --namespace Microsoft.Storage
+
 # Création du Storage Account
 az storage account create \
   --name nesypostorage \
   --resource-group rg-nesypo \
-  --location spaincentral \
+  --location polandcentral \
   --sku Standard_LRS
+
+# Attribution du rôle pour accéder aux blobs
+az role assignment create \
+  --role "Storage Blob Data Contributor" \
+  --assignee <USER_PRINCIPAL_ID> \
+  --scope /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/rg-nesypo/providers/Microsoft.Storage/storageAccounts/nesypostorage
 
 # Création du Blob container
 az storage container create \
   --name exports \
   --account-name nesypostorage \
-  --public-access off
+  --auth-mode login
 
-# Exemple : upload d'un fichier vers le Blob container
+# Upload d'un fichier JSON de test
 az storage blob upload \
   --account-name nesypostorage \
   --container-name exports \
   --name tasks-export.json \
-  --file tasks-export.json
+  --file tasks-export.json \
+  --auth-mode login
 
 # Liste des blobs dans le container
 az storage blob list \
   --account-name nesypostorage \
   --container-name exports \
+  --auth-mode login \
   --output table
 
 # Configuration d'une règle de cycle de vie (expiration après 30 jours)
@@ -288,20 +329,19 @@ az storage account management-policy create \
 
 ### Deployment Slot (Staging)
 ```bash
-# Création du slot staging pour le backend
+# Upgrade du plan vers S1 pour supporter les slots
+az appservice plan update \
+  --name nesypo-plan \
+  --resource-group rg-nesypo \
+  --sku S1
+
+# Création du slot staging
 az webapp deployment slot create \
   --resource-group rg-nesypo \
   --name nesypo-backend \
   --slot staging
 
-# Déploiement d'une image sur le slot staging
-az webapp config container set \
-  --resource-group rg-nesypo \
-  --name nesypo-backend \
-  --slot staging \
-  --docker-custom-image-name nesypoacr.azurecr.io/nesypo-backend:staging
-
-# Swap staging → production
+# Swap staging → production (sans downtime)
 az webapp deployment slot swap \
   --resource-group rg-nesypo \
   --name nesypo-backend \
@@ -326,37 +366,25 @@ az appservice plan update \
 
 ---
 
-## URL de l'application
-
-> ⚠️ Le déploiement sur App Service n'a pas pu être finalisé en raison d'un throttling de l'abonnement Azure for Students lors de la création de l'App Service Plan (erreur 429 persistante malgré plusieurs tentatives via CLI et portail, sur toutes les régions disponibles). Les images Docker sont bien présentes dans l'ACR et l'application fonctionne localement.
-
-- **Frontend (local)** : http://localhost:3000
-- **Backend (local)** : http://localhost:8000
-- **ACR** : nesypoacr.azurecr.io
-- **Frontend Azure (prévu)** : https://nesypo-frontend.azurewebsites.net
-- **Backend Azure (prévu)** : https://nesypo-backend.azurewebsites.net
-
----
-
 ## Explication des services Azure utilisés
 
 ### Azure Cosmos DB for PostgreSQL
 Cosmos DB for PostgreSQL (anciennement Citus) est un service de base de données managé entièrement compatible avec le protocole PostgreSQL. Je l'ai choisi car mon backend Symfony utilise Doctrine ORM avec PostgreSQL : aucune migration de code n'est nécessaire, seule la chaîne de connexion `DATABASE_URL` change. Azure gère les sauvegardes, la haute disponibilité et les mises à jour automatiquement.
 
 ### Azure Key Vault
-Key Vault est un coffre-fort cloud pour stocker les secrets de l'application (chaîne de connexion à la base de données, clé secrète Symfony, passphrase JWT) de manière sécurisée et auditée. Plutôt que de stocker ces informations dans des variables d'environnement en clair ou dans le code source, Key Vault les centralise et n'en autorise l'accès qu'aux identités autorisées.
+Key Vault est un coffre-fort cloud pour stocker les secrets de l'application (chaîne de connexion à la base de données, clé secrète Symfony, passphrase JWT) de manière sécurisée et auditée. Plutôt que de stocker ces informations dans des variables d'environnement en clair ou dans le code source, Key Vault les centralise et n'en autorise l'accès qu'aux identités autorisées via RBAC.
 
 ### Managed Identity
 La Managed Identity est une identité Azure attribuée automatiquement à l'App Service backend. Elle permet à l'application de s'authentifier auprès du Key Vault sans aucun mot de passe ni clé d'API dans le code — Azure gère le cycle de vie des credentials de façon transparente. C'est le mécanisme recommandé pour sécuriser les accès entre services Azure.
 
 ### Azure Blob Storage
-Blob Storage est un service de stockage objet pour fichiers non structurés. Dans ce projet, il est utilisé pour stocker des exports JSON des tâches générés par l'API Symfony. Un container `exports` est créé avec une règle de cycle de vie qui supprime automatiquement les fichiers après 30 jours. Les blobs peuvent être rendus accessibles via URL publique ou URL signée temporaire (SAS).
+Blob Storage est un service de stockage objet pour fichiers non structurés. Dans ce projet, il stocke des exports JSON des tâches. Un container `exports` est créé avec une règle de cycle de vie qui supprime automatiquement les fichiers après 30 jours. Les blobs sont accessibles via URL ou URL signée temporaire (SAS).
 
 ### Deployment Slots
-Les slots de déploiement permettent d'avoir plusieurs environnements (production et staging) sur le même App Service. On déploie d'abord une nouvelle version sur le slot `staging`, on la teste, puis on effectue un **swap** instantané qui bascule le trafic vers la nouvelle version sans downtime. En cas de problème, le swap peut être annulé immédiatement.
+Les slots de déploiement permettent d'avoir plusieurs environnements (production et staging) sur le même App Service. On déploie d'abord une nouvelle version sur le slot `staging`, on la teste, puis on effectue un **swap** instantané qui bascule le trafic sans downtime. En cas de problème, le swap peut être annulé immédiatement.
 
 ### Scaling manuel
-Le scaling manuel permet d'augmenter le nombre d'instances (workers) de l'App Service Plan pour absorber une charge plus importante. Avec le SKU B1, on peut passer de 1 à plusieurs instances en une seule commande. En production, on utiliserait plutôt l'autoscaling basé sur des métriques (CPU, mémoire, requêtes), mais le scaling manuel permet de comprendre le principe et de démontrer l'élasticité du cloud.
+Le scaling manuel permet d'augmenter le nombre d'instances (workers) de l'App Service Plan pour absorber une charge plus importante. On peut passer de 1 à plusieurs instances en une seule commande CLI. En production, on utiliserait l'autoscaling basé sur des métriques (CPU, mémoire, requêtes).
 
 ---
 
@@ -368,24 +396,27 @@ Le scaling manuel permet d'augmenter le nombre d'instances (workers) de l'App Se
 | Dockerfiles de production | ✅ | Backend (PHP-FPM + Nginx) et Frontend (Next.js standalone) |
 | Azure Container Registry | ✅ | nesypoacr.azurecr.io créé en Spain Central |
 | Push des images Docker | ✅ | nesypo-backend:latest et nesypo-frontend:latest |
-| App Service Plan | ❌ | Bloqué par throttling 429 de l'abonnement étudiant |
-| App Service (Backend + Frontend) | ❌ | Dépend du plan |
-| Cosmos DB | ⏳ | Prévu, commandes documentées |
-| Key Vault | ⏳ | Prévu, commandes documentées |
-| Managed Identity | ⏳ | Prévu, commandes documentées |
-| Blob Storage | ⏳ | Prévu, commandes documentées |
-| Deployment Slot | ⏳ | Prévu, commandes documentées |
-| Scaling manuel | ⏳ | Prévu, commandes documentées |
+| App Service Plan | ✅ | nesypo-plan créé en Poland Central (SKU S1) |
+| App Service Backend | ✅ | nesypo-backend.azurewebsites.net |
+| App Service Frontend | ✅ | nesypo-frontend.azurewebsites.net |
+| Cosmos DB for PostgreSQL | ✅ | nesypo-db créé et prêt en Poland Central |
+| Key Vault | ✅ | 3 secrets stockés (database-url, app-secret, jwt-passphrase) |
+| Managed Identity | ✅ | Activée sur le backend, rôle Key Vault Secrets User assigné |
+| Blob Storage | ✅ | Container exports + fichier uploadé + règle de cycle de vie 30j |
+| Deployment Slot staging | ✅ | nesypo-backend-staging.azurewebsites.net |
+| Scaling manuel | ✅ | Démontré 1→2→1 instances |
 
 ---
 
 ## Limites rencontrées
 
-- **Throttling App Service Plan** : L'abonnement Azure for Students (Emineo Education) a retourné une erreur 429 persistante lors de toutes les tentatives de création d'App Service Plan, aussi bien via la CLI qu'via le portail Azure, sur toutes les régions disponibles (Spain Central, West Europe, North Europe, Sweden Central, Switzerland North) et tous les SKUs testés (F1, B1, S1). La création de l'ACR en Spain Central a fonctionné normalement sur le même abonnement. Un signalement a été effectué auprès du formateur.
+- **Throttling App Service Plan** : L'abonnement Azure for Students a retourné une erreur 429 persistante lors des premières tentatives en Spain Central. Le déploiement a finalement réussi en Poland Central après plusieurs essais.
 
-- **ACR Tasks non disponibles** : La commande `az acr build` (build dans le cloud) n'est pas disponible sur l'abonnement étudiant. Le build a donc été effectué localement avec Docker puis poussé vers l'ACR.
+- **ACR Tasks non disponibles** : La commande `az acr build` (build dans le cloud) n'est pas disponible sur l'abonnement étudiant. Le build a été effectué localement avec Docker puis poussé vers l'ACR.
 
-- **Régions restreintes** : L'abonnement étudiant ne donne accès qu'à un sous-ensemble de régions Azure. France Central notamment est bloquée, Spain Central a été retenu comme région de travail.
+- **Régions restreintes** : L'abonnement étudiant ne donne accès qu'à un sous-ensemble de régions Azure. France Central est bloquée. L'ACR a été créé en Spain Central et les autres ressources en Poland Central.
+
+- **RBAC obligatoire** : Le Key Vault et le Storage Account utilisent RBAC par défaut, ce qui nécessite d'assigner explicitement les rôles (`Key Vault Secrets Officer`, `Storage Blob Data Contributor`) avant de pouvoir interagir avec ces ressources.
 
 ---
 
@@ -401,14 +432,14 @@ git clone https://github.com/HugoZins/Nesypo-Azure.git
 cd Nesypo-Azure
 
 cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env.local
+echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > frontend/.env.local
 
 docker compose up -d
 
 docker compose exec backend composer install
-docker compose exec backend symfony console lexik:jwt:generate-keypair
-docker compose exec backend symfony console doctrine:migrations:migrate --no-interaction
-docker compose exec backend symfony console doctrine:fixtures:load --no-interaction
+docker compose exec backend php bin/console lexik:jwt:generate-keypair
+docker compose exec backend php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec backend php bin/console doctrine:fixtures:load --no-interaction
 ```
 
 - **Frontend** → http://localhost:3000
